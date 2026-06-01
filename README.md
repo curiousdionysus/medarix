@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Medarix
 
 **AI-powered Radiology Reporting & Clinical Intelligence Platform**
@@ -80,3 +81,6 @@ Recommended text model: **`medarix-ai`** (create from `ollama/Modelfile.medarix`
 ## License
 
 Proprietary. All rights reserved unless otherwise stated by the repository owner.
+=======
+# medarix
+>>>>>>> 7d4aa9c8042c3978dd1c0a2e8343ca1aa2715a4a
