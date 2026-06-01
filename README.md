@@ -25,7 +25,7 @@ cd medarix
 copy .env.example .env
 # Edit .env: POSTGRES_PASSWORD, ORTHANC_PASSWORD, JWT/HMAC secrets
 docker compose up -d --build
-docker exec ollama ollama pull llama3.1:latest
+docker exec medarix-ai ollama pull llama3.1:latest
 ```
 
 Open **http://localhost:8088**

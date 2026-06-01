@@ -75,9 +75,9 @@ docker compose up -d ollama
 Modelleri indirin:
 
 ```powershell
-docker exec ollama ollama pull llama3.1:latest
-docker exec ollama ollama pull qwen2.5:14b
-docker exec ollama ollama list
+docker exec medarix-ai ollama pull llama3.1:latest
+docker exec medarix-ai ollama pull qwen2.5:14b
+docker exec medarix-ai ollama list
 ```
 
 ### Medarix AI modeli (Modelfile)
@@ -86,14 +86,14 @@ docker exec ollama ollama list
 
 ```powershell
 cd ollama
-Get-Content Modelfile.medarix | docker exec -i ollama ollama create medarix-ai -f -
+Get-Content Modelfile.medarix | docker exec -i medarix-ai ollama create medarix-ai -f -
 ```
 
 Alternatif (dosyayı konteynere kopyalayarak):
 
 ```powershell
-docker cp ollama/Modelfile.medarix ollama:/tmp/Modelfile.medarix
-docker exec ollama ollama create medarix-ai -f /tmp/Modelfile.medarix
+docker cp ollama/Modelfile.medarix medarix-ai:/tmp/Modelfile.medarix
+docker exec medarix-ai ollama create medarix-ai -f /tmp/Modelfile.medarix
 ```
 
 `Modelfile.medarix` içindeki `FROM` satırını (`qwen2.5:14b` vb.) kendi taban modelinize göre düzenleyin.
@@ -101,7 +101,7 @@ docker exec ollama ollama create medarix-ai -f /tmp/Modelfile.medarix
 Eski adlı bir model varsa:
 
 ```powershell
-docker exec ollama ollama cp <eski-model-adı>:latest medarix-ai:latest
+docker exec medarix-ai ollama cp <eski-model-adı>:latest medarix-ai:latest
 ```
 
 ### Modelleri yedekleme veya taşıma (isteğe bağlı)
@@ -173,7 +173,7 @@ Giriş bilgilerini not için (Git’e eklemeyin): `.credentials.local.txt` (depo
 
 1. Arayüz → `GET /api/v1/admin/ai/models/text?base_url=...`
 2. Backend → `GET {dil modeli sunucusu}/models` (OpenAI uyumlu) veya `/api/tags` (Ollama yerel)
-3. Dönen `id` değerleri = `docker exec ollama ollama list` çıktısındaki isimler
+3. Dönen `id` değerleri = `docker exec medarix-ai ollama list` çıktısındaki isimler
 
 Görünen isimler (`medarix-ai:latest`, `llama3.1:latest` vb.) **`ollama pull` / `ollama create`** ile Ollama volume’üne kaydedildiğinde oluşur. Modelfile metni (`ollama/Modelfile.medarix`) yalnızca `ollama create` sırasında modele gömülen sistem talimatıdır.
 
@@ -243,7 +243,7 @@ SQL migration dosyaları backend açılışında otomatik uygulanır (initdb yal
 | Belirti | Çözüm |
 |--------|--------|
 | `external volume ... not found` | Bölüm 4: volume adını düzeltin veya `external: true` kaldırın |
-| Dil modeli listesi boş | `docker exec ollama ollama pull <model>` |
+| Dil modeli listesi boş | `docker exec medarix-ai ollama pull <model>` |
 | Postgres authentication failed | Bölüm 10 |
 | Port 8088 kullanımda | Çakışan süreci durdurun veya compose portunu değiştirin |
 | GPU / CUDA hatası | Bölüm 9 |
@@ -258,7 +258,7 @@ cd medarix
 copy .env.example .env
 # .env: parola ve secret'ları düzenle
 docker compose up -d --build
-docker exec ollama ollama pull llama3.1:latest
+docker exec medarix-ai ollama pull llama3.1:latest
 ```
 
 Tarayıcı: **http://localhost:8088**

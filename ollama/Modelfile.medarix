@@ -1,5 +1,5 @@
 # Medarix — radyoloji dikte transkript düzeltici (Ollama özel model)
-# Oluşturma: docker exec -i ollama ollama create medarix-ai -f Modelfile.medarix
+# Oluşturma: docker exec -i medarix-ai ollama create medarix-ai -f Modelfile.medarix
 FROM qwen2.5:14b
 
 SYSTEM """ROLE: Senior Radiologist & Medical Editor

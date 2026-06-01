@@ -1,7 +1,7 @@
 services:
   ollama:
     image: ollama/ollama:latest
-    container_name: ollama
+    container_name: medarix-ai
     restart: unless-stopped
     ports:
       - "11434:11434"
@@ -22,7 +22,7 @@ services:
 
   whisper:
     image: fedirz/faster-whisper-server:latest-cuda
-    container_name: whisper
+    container_name: medarix-whisper
     restart: unless-stopped
     ports:
       - "10300:8000"
