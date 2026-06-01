@@ -49,6 +49,18 @@ DEFAULT_SETTINGS = [
     SettingDefinition("pacs.port", str(settings.pacs_port), "PACS / DICOM", "PACS portu", "DICOM association portu."),
     SettingDefinition("pacs.called_ae_title", settings.pacs_called_ae_title, "PACS / DICOM", "Çağrılan AE başlığı", "Harici PACS sisteminin AE başlığı."),
     SettingDefinition("pacs.dicomweb_base_url", settings.dicomweb_base_url, "PACS / DICOM", "DICOMweb temel URL", "Web görüntüleyici için WADO-RS/QIDO-RS/STOW-RS endpoint'i."),
+    SettingDefinition("pacs.mwl_auto_sync", "true", "PACS / DICOM", "İş listesi otomatik senkron", "İş listesi açıldığında PACS'ten Q/R sorgusu çalışır."),
+    SettingDefinition("pacs.mwl_sync_days", "7", "PACS / DICOM", "Q/R tarih penceresi (gün)", "Bugünden geriye ve ileriye kaç gün C-FIND sorgulanır."),
+    SettingDefinition("pacs.query_sync_days", "7", "PACS / DICOM", "Q/R tarih penceresi (gün)", "Study Root C-FIND için tarih aralığı."),
+    SettingDefinition("pacs.move_destination_ae", settings.pacs_ae_title, "PACS / DICOM", "C-MOVE hedef AE", "Retrieve (C-MOVE) ile görüntülerin gönderileceği AE başlığı (ör. Orthanc)."),
+    SettingDefinition(
+        "pacs.web_viewer_url_template",
+        "",
+        "PACS / DICOM",
+        "PACS web görüntüleyici URL şablonu",
+        "İş listesinden accession ile açılır. Yer tutucular: {accession}, {study_instance_uid}. "
+        "Örnek: https://pacs.sunucu/viewer?AccessionNumber={accession}",
+    ),
     SettingDefinition("auth.ldap_enabled", str(settings.ldap_enabled).lower(), "Kimlik Doğrulama", "LDAP etkin", "LDAP/Active Directory kimlik doğrulamasını etkinleştir."),
     SettingDefinition("auth.ldap_server_uri", settings.ldap_server_uri, "Kimlik Doğrulama", "LDAP sunucu URI", "Active Directory için LDAP veya LDAPS URI."),
     SettingDefinition("auth.ldap_bind_dn", settings.ldap_bind_dn, "Kimlik Doğrulama", "LDAP bind DN", "Kullanıcı araması için servis hesabı DN değeri."),

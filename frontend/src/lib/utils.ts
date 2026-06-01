@@ -13,6 +13,19 @@ export function initials(name?: string | null, fallback = "?"): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+/** Format study date + optional time (API: YYYY-MM-DD and HH:MM:SS). */
+export function formatStudyDateTime(
+  studyDate?: string | null,
+  studyTime?: string | null,
+): string {
+  if (!studyDate) return "—";
+  const datePart = formatDate(studyDate);
+  if (!studyTime) return datePart;
+  const match = /^(\d{2}):(\d{2})/.exec(studyTime.trim());
+  if (!match) return datePart;
+  return `${datePart} ${match[1]}:${match[2]}`;
+}
+
 export function formatDate(value?: string | null): string {
   if (!value) return "—";
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {

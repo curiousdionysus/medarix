@@ -19,6 +19,11 @@ import {
   Save,
   Upload,
 } from "lucide-react";
+import {
+  clearLinkedStudyId,
+  getLinkedStudyId,
+  setLinkedStudyId,
+} from "@/features/dictation/linked-study-storage";
 import { useRecorder } from "@/features/dictation/use-recorder";
 import { Waveform } from "@/features/dictation/waveform";
 import { PlaybackTransport } from "@/features/dictation/playback";
@@ -57,7 +62,7 @@ export default function DictationPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: templates } = useTemplates();
 
-  const linkedStudyId = searchParams.get("studyId") ?? undefined;
+  const linkedStudyId = searchParams.get("studyId") ?? getLinkedStudyId() ?? undefined;
   const passedStudy = (location.state as { study?: StudyOut } | null)?.study;
   const { data: fetchedStudy } = useStudy(passedStudy ? undefined : linkedStudyId);
 
@@ -69,23 +74,32 @@ export default function DictationPage() {
   const saveReport = useSaveReport(study?.id);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Auto-link a study passed from the worklist (state) or via ?studyId= deep link.
+  // Auto-link from worklist, ?studyId=, or persisted local storage until user clears.
   const appliedStudyRef = React.useRef<string | null>(null);
   React.useEffect(() => {
-    const incoming = passedStudy ?? fetchedStudy;
-    if (incoming && appliedStudyRef.current !== incoming.id) {
-      appliedStudyRef.current = incoming.id;
-      setStudy(incoming);
+    if (appliedStudyRef.current === "__cleared__") return;
+    const incoming = passedStudy ?? (linkedStudyId ? fetchedStudy : undefined);
+    if (!incoming || appliedStudyRef.current === incoming.id) return;
+    appliedStudyRef.current = incoming.id;
+    setStudy(incoming);
+    setLinkedStudyId(incoming.id);
+    if (searchParams.get("studyId") !== incoming.id) {
+      const next = new URLSearchParams(searchParams);
+      next.set("studyId", incoming.id);
+      setSearchParams(next, { replace: true });
+    }
+    if (passedStudy) {
       toast.success(
         t("dictation.studyLinked", { name: incoming.patient_name || t("dictation.studyLinkedDefault") }),
       );
     }
-  }, [passedStudy, fetchedStudy]);
+  }, [passedStudy, fetchedStudy, linkedStudyId, searchParams, setSearchParams, t]);
 
   const clearLinkedStudy = () => {
     setStudy(null);
     appliedStudyRef.current = "__cleared__";
-    if (linkedStudyId) {
+    clearLinkedStudyId();
+    if (searchParams.get("studyId")) {
       const next = new URLSearchParams(searchParams);
       next.delete("studyId");
       setSearchParams(next, { replace: true });

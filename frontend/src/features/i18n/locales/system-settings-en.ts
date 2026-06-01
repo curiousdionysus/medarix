@@ -47,6 +47,26 @@ export const systemSettings = {
     label: "DICOMweb base URL",
     desc: "WADO-RS/QIDO-RS/STOW-RS endpoint for the web viewer.",
   },
+  pacs_mwl_auto_sync: {
+    label: "Auto-sync worklist from PACS",
+    desc: "Run Study Root Query (C-FIND) when the worklist page opens.",
+  },
+  pacs_mwl_sync_days: {
+    label: "Q/R date window (days)",
+    desc: "Days before and after today for C-FIND queries.",
+  },
+  pacs_query_sync_days: {
+    label: "Q/R date window (days)",
+    desc: "Study Root C-FIND date range.",
+  },
+  pacs_move_destination_ae: {
+    label: "C-MOVE destination AE",
+    desc: "AE title for retrieve (e.g. Orthanc RADIOLOGY).",
+  },
+  pacs_web_viewer_url_template: {
+    label: "PACS web viewer URL template",
+    desc: "Opened from the worklist via accession. Placeholders: {accession}, {study_instance_uid}.",
+  },
   auth_ldap_enabled: {
     label: "LDAP enabled",
     desc: "Enable LDAP/Active Directory authentication.",

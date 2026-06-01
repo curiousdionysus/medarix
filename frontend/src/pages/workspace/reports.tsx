@@ -56,7 +56,7 @@ export default function ReportsPage() {
 
 function ReportPicker() {
   const t = useT();
-  const { data, isLoading } = useStudies({ limit: 25 });
+  const { data, isLoading } = useStudies({ limit: 50, has_report: true });
   return (
     <div className="space-y-6">
       <PageHeader
@@ -66,7 +66,7 @@ function ReportPicker() {
       />
       <Card>
         <CardHeader>
-          <CardTitle>{t("reports.recentStudies")}</CardTitle>
+          <CardTitle>{t("reports.recentReports")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1.5">
           {isLoading ? (

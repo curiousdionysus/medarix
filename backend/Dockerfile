@@ -9,16 +9,22 @@ COPY frontend/ ./
 RUN npm run build
 
 # --- Stage 2: Python backend serving the built SPA ---
-FROM python:3.12-slim
+FROM python:3.12-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends fonts-dejavu-core \
-    && rm -rf /var/lib/apt/lists/*
+# Retry apt on flaky networks; fonts are optional for PDF export.
+RUN for i in 1 2 3 4 5; do \
+      apt-get update \
+      && apt-get install -y --no-install-recommends fonts-dejavu-core \
+      && rm -rf /var/lib/apt/lists/* \
+      && exit 0; \
+      sleep 15; \
+    done; \
+    echo "WARN: fonts-dejavu-core install skipped" >&2
 
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

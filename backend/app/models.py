@@ -1,8 +1,8 @@
 import enum
 import uuid
-from datetime import datetime
+from datetime import date, datetime, time
 
-from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Index, Integer, LargeBinary, String, Text, UniqueConstraint, func
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Index, Integer, LargeBinary, String, Text, Time, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import INET, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -113,7 +113,8 @@ class Study(Base):
     study_instance_uid: Mapped[str] = mapped_column(String(128), unique=True, index=True)
     accession_number: Mapped[str | None] = mapped_column(String(64), index=True)
     modality: Mapped[str | None] = mapped_column(String(32), index=True)
-    study_date: Mapped[datetime | None] = mapped_column(Date, index=True)
+    study_date: Mapped[date | None] = mapped_column(Date, index=True)
+    study_time: Mapped[time | None] = mapped_column(Time, nullable=True)
     study_description: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(32), default="available")
     priority: Mapped[str] = mapped_column(String(16), default="routine")

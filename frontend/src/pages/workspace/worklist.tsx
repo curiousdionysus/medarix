@@ -1,121 +1,210 @@
 import * as React from "react";
+
 import { useNavigate } from "react-router-dom";
-import { ListChecks, Inbox, PenLine, CheckCircle2 } from "lucide-react";
+
+import { ListChecks } from "lucide-react";
+
+import { toast } from "sonner";
+
 import { useStudies, type StudyFilters } from "@/features/studies/api";
+
+import { useSyncPacsWorklist } from "@/features/pacs/api";
+
+import { useIsEnterprise } from "@/features/license/api";
+
 import { StudyFilterBar } from "@/features/studies/filter-bar";
+
+import { WorklistList } from "@/features/worklist/worklist-list";
+
+import { useApiError } from "@/features/i18n/helpers";
+
 import { useT } from "@/features/i18n/locale-context";
+
 import { PageHeader } from "@/components/shared/page-header";
+
 import { EmptyState } from "@/components/shared/empty-state";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ModalityBadge, PriorityBadge } from "@/components/shared/status-badge";
-import { cn, formatDate } from "@/lib/utils";
+
 import type { StudyOut } from "@/types/api";
 
-const PRIORITY_WEIGHT: Record<string, number> = { stat: 0, urgent: 1, routine: 2 };
 
-function columnOf(s: StudyOut): "unreported" | "inprogress" | "done" {
-  if (!s.report_status) return "unreported";
-  if (s.report_status === "signed" || s.report_status === "amended") return "done";
-  return "inprogress";
-}
 
 export default function WorklistPage() {
+
   const t = useT();
-  const [filters, setFilters] = React.useState<StudyFilters>({ limit: 150 });
-  const { data, isLoading } = useStudies(filters);
+
+  const apiErr = useApiError();
+
+  const [filters, setFilters] = React.useState<StudyFilters>({ limit: 150, include_imaging: true });
+
+  const { data, isLoading, isFetching } = useStudies(filters);
+
   const navigate = useNavigate();
 
-  const COLUMNS = React.useMemo(
-    () => [
-      { id: "unreported" as const, title: t("worklist.unreported"), icon: Inbox, tone: "text-info" },
-      { id: "inprogress" as const, title: t("worklist.inProgress"), icon: PenLine, tone: "text-warning" },
-      { id: "done" as const, title: t("worklist.completed"), icon: CheckCircle2, tone: "text-success" },
-    ],
-    [t],
+  const isEnterprise = useIsEnterprise();
+
+  const syncPacs = useSyncPacsWorklist();
+
+
+
+  const pullMwlBeforeSearch = React.useCallback(
+
+    async (next: StudyFilters) => {
+
+      if (!isEnterprise) {
+
+        toast.error(t("worklist.pacsEnterpriseRequired"));
+
+        return;
+
+      }
+
+      try {
+
+        const res = await syncPacs.mutateAsync({
+
+          from_date: next.from_date,
+
+          to_date: next.to_date,
+
+          modality: next.modality?.[0],
+
+          accession_number: next.accession_number,
+
+          patient_id: next.patient_tc,
+
+        });
+
+        toast.success(
+
+          t("worklist.pacsSyncDone", {
+
+            fetched: String(res.fetched),
+
+            created: String(res.created),
+
+            updated: String(res.updated),
+
+          }),
+
+        );
+
+        if (res.errors.length) {
+
+          toast.warning(t("worklist.pacsSyncPartial", { count: String(res.errors.length) }));
+
+        }
+
+      } catch (err) {
+
+        toast.error(apiErr(err, "worklist.pacsSyncFail"));
+
+        throw err;
+
+      }
+
+    },
+
+    [apiErr, isEnterprise, syncPacs, t],
+
   );
 
-  const grouped = React.useMemo(() => {
-    const g: Record<string, StudyOut[]> = { unreported: [], inprogress: [], done: [] };
-    (data ?? []).forEach((s) => g[columnOf(s)].push(s));
-    Object.values(g).forEach((list) =>
-      list.sort(
-        (a, b) =>
-          (PRIORITY_WEIGHT[a.priority ?? "routine"] ?? 2) - (PRIORITY_WEIGHT[b.priority ?? "routine"] ?? 2),
-      ),
-    );
-    return g;
-  }, [data]);
 
-  const total = data?.length ?? 0;
+
+  const openStudy = React.useCallback(
+
+    (s: StudyOut) => {
+
+      navigate(`/workspace/dictation?studyId=${s.id}`, { state: { study: s } });
+
+    },
+
+    [navigate],
+
+  );
+
+
+
+  const studies = data ?? [];
+
+  const total = studies.length;
+
+  const studiesLoading = isLoading;
+
+  const studiesFetching = isFetching && !isLoading;
+
+
 
   return (
+
     <div className="space-y-5">
+
       <PageHeader
+
         title={t("worklist.title")}
+
         description={t("worklist.description")}
+
         icon={<ListChecks className="size-5" />}
+
       />
-      <StudyFilterBar value={filters} onChange={setFilters} />
 
-      {!isLoading && total > 0 && (
-        <p className="px-1 text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground">{t("worklist.studiesFound", { count: String(total) })}</span>
-          {total >= (filters.limit ?? 0) && filters.limit
-            ? ` ${t("worklist.studiesLimit", { limit: String(filters.limit) })}`
-            : ""}
+
+
+      <StudyFilterBar
+
+        value={filters}
+
+        onChange={setFilters}
+
+        onBeforeSearch={pullMwlBeforeSearch}
+
+        searchPending={syncPacs.isPending}
+
+      />
+
+
+
+      {!studiesLoading && total > 0 && filters.limit && total >= filters.limit ? (
+
+        <p className="text-center text-xs text-muted-foreground">
+
+          {t("worklist.studiesLimit", { limit: String(filters.limit) })}
+
         </p>
+
+      ) : null}
+
+
+
+      {(studiesLoading || total > 0) && (
+
+        <WorklistList
+
+          studies={studies}
+
+          loading={studiesLoading}
+
+          fetching={studiesFetching || syncPacs.isPending}
+
+          patientFallback={t("common.unnamedPatient")}
+
+          onOpenStudy={openStudy}
+
+        />
+
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        {COLUMNS.map((col) => (
-          <div key={col.id} className="flex flex-col gap-3">
-            <div className="flex items-center justify-between px-1">
-              <span className={cn("flex items-center gap-2 text-sm font-semibold", col.tone)}>
-                <col.icon className="size-4" />
-                {col.title}
-              </span>
-              <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-secondary-foreground">
-                {grouped[col.id].length}
-              </span>
-            </div>
 
-            <div className="flex max-h-[calc(100vh-20rem)] min-h-24 flex-col gap-2 overflow-y-auto rounded-xl bg-muted/40 p-2">
-              {isLoading ? (
-                Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)
-              ) : grouped[col.id].length ? (
-                grouped[col.id].map((s) => (
-                  <Card
-                    key={s.id}
-                    className="cursor-pointer border-border/80 p-3 transition-colors hover:border-primary/40 hover:bg-card"
-                    onClick={() => navigate(`/workspace/dictation?studyId=${s.id}`, { state: { study: s } })}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold">{s.patient_name || t("common.unnamedPatient")}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {s.study_description || "—"} · {s.accession_number || "—"}
-                        </p>
-                      </div>
-                      <PriorityBadge priority={s.priority} />
-                    </div>
-                    <div className="mt-2 flex items-center gap-2">
-                      <ModalityBadge modality={s.modality} />
-                      <span className="text-xs text-muted-foreground">{formatDate(s.study_date)}</span>
-                    </div>
-                  </Card>
-                ))
-              ) : (
-                <p className="py-6 text-center text-xs text-muted-foreground">{t("worklist.columnEmpty")}</p>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
 
-      {!isLoading && total === 0 && (
+      {!studiesLoading && total === 0 && (
+
         <EmptyState icon={ListChecks} title={t("worklist.empty")} description={t("filter.search")} />
+
       )}
+
     </div>
+
   );
+
 }
+

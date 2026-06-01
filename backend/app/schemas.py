@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, time
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -142,12 +142,16 @@ class StudyOut(BaseModel):
     accession_number: str | None
     modality: str | None
     study_date: date | None
-    study_description: str | None
+    study_time: time | None = None
+    study_description: str | None = None
     status: str
     priority: str | None = "routine"
     report_status: ReportStatus | None = None
     patient_name: str | None = None
     patient_tc: str | None = None
+    has_images: bool = False
+    image_count: int = 0
+    pacs_viewer_url: str | None = None
 
 
 class SeriesOut(BaseModel):
@@ -250,6 +254,22 @@ class PacsQueryRequest(BaseModel):
 class PacsRetrieveRequest(BaseModel):
     study_instance_uid: str
     destination_ae_title: str | None = None
+
+
+class PacsWorklistSyncRequest(BaseModel):
+    from_date: date | None = None
+    to_date: date | None = None
+    modality: str | None = None
+    patient_id: str | None = None
+    accession_number: str | None = None
+
+
+class PacsWorklistSyncResponse(BaseModel):
+    fetched: int
+    created: int
+    updated: int
+    skipped: int
+    errors: list[str] = []
 
 
 class TranscriptionResponse(BaseModel):

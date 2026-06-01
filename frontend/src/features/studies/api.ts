@@ -16,8 +16,14 @@ export interface StudyFilters {
   last_name?: string;
   from_date?: string;
   to_date?: string;
+  from_time?: string;
+  to_time?: string;
   modality?: string[];
   limit?: number;
+  /** Only studies with a saved dictation report (content or transcript). */
+  has_report?: boolean;
+  /** Include linked-image status and PACS web viewer URL per study. */
+  include_imaging?: boolean;
 }
 
 export function useStudies(filters: StudyFilters, enabled = true) {
@@ -28,6 +34,10 @@ export function useStudies(filters: StudyFilters, enabled = true) {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([k, v]) => {
         if (v == null || v === "") return;
+        if (typeof v === "boolean") {
+          if (v) params.append(k, "true");
+          return;
+        }
         if (Array.isArray(v)) v.forEach((item) => params.append(k, item));
         else params.append(k, String(v));
       });

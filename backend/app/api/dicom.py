@@ -10,9 +10,11 @@ from app.api.license_guard import require_enterprise_license
 from app.core.config import get_settings
 from app.db.session import get_db
 from app.models import User
-from app.schemas import PacsQueryRequest, PacsRetrieveRequest
+from app.schemas import PacsQueryRequest, PacsRetrieveRequest, PacsWorklistSyncRequest, PacsWorklistSyncResponse
 from app.services.audit import record_audit_event
 from app.services.dicom_gateway import dicom_gateway
+from app.services.pacs_qr_client import PacsConnectionError
+from app.services.pacs_query_sync import sync_studies_from_pacs_query
 from app.services.orthanc_http import orthanc_basic_auth
 from app.services.rbac import require_permission
 from app.services.system_settings import get_settings_map, is_setting_enabled
@@ -68,9 +70,74 @@ def query_pacs(
     require_enterprise_license(db)
     system_settings = get_settings_map(db)
     _require_pacs_enabled(system_settings)
-    result = dicom_gateway.query_studies(payload, system_settings)
-    record_audit_event(db, request=request, action="pacs.query", resource_type="pacs", actor=current_user, metadata=payload.model_dump(exclude_none=True))
+    try:
+        result = dicom_gateway.query_studies(payload, system_settings)
+    except PacsConnectionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(exc),
+        ) from exc
+    record_audit_event(
+        db,
+        request=request,
+        action="pacs.query",
+        resource_type="pacs",
+        actor=current_user,
+        metadata={**payload.model_dump(exclude_none=True), "count": len(result)},
+    )
     return result
+
+
+@router.post("/worklist/sync", response_model=PacsWorklistSyncResponse)
+def sync_worklist(
+    request: Request,
+    payload: PacsWorklistSyncRequest,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> PacsWorklistSyncResponse:
+    """C-FIND (Study Root Q/R) ile PACS sorgula ve sonuçları iş listesine yaz."""
+    require_permission(current_user, "pacs:query")
+    require_enterprise_license(db)
+    system_settings = get_settings_map(db)
+    _require_pacs_enabled(system_settings)
+    try:
+        result = sync_studies_from_pacs_query(
+            db,
+            system_settings,
+            from_date=payload.from_date,
+            to_date=payload.to_date,
+            modality=payload.modality,
+            patient_id=payload.patient_id,
+            accession_number=payload.accession_number,
+        )
+    except PacsConnectionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(exc),
+        ) from exc
+
+    record_audit_event(
+        db,
+        request=request,
+        action="pacs.query_sync",
+        resource_type="pacs",
+        actor=current_user,
+        metadata={
+            "mode": "study_root_c_find",
+            "fetched": result.fetched,
+            "created": result.created,
+            "updated": result.updated,
+            "skipped": result.skipped,
+            "error_count": len(result.errors),
+        },
+    )
+    return PacsWorklistSyncResponse(
+        fetched=result.fetched,
+        created=result.created,
+        updated=result.updated,
+        skipped=result.skipped,
+        errors=result.errors,
+    )
 
 
 @router.post("/retrieve")

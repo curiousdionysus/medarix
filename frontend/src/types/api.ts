@@ -37,12 +37,16 @@ export interface StudyOut {
   accession_number?: string | null;
   modality?: string | null;
   study_date?: string | null;
+  study_time?: string | null;
   study_description?: string | null;
   status: string;
   priority?: StudyPriority | null;
   report_status?: ReportStatus | null;
   patient_name?: string | null;
   patient_tc?: string | null;
+  has_images?: boolean;
+  image_count?: number;
+  pacs_viewer_url?: string | null;
 }
 
 export interface ReportOut {

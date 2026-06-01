@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ModalityBadge, ReportStatusBadge, PriorityBadge } from "@/components/shared/status-badge";
-import { formatDate } from "@/lib/utils";
+import { formatStudyDateTime } from "@/lib/utils";
 
 export default function ImagingPage() {
   const t = useT();
@@ -74,7 +74,7 @@ export default function ImagingPage() {
                     </TableCell>
                     <TableCell className="font-mono text-xs">{s.accession_number || "—"}</TableCell>
                     <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {formatDate(s.study_date)}
+                      {formatStudyDateTime(s.study_date, s.study_time)}
                     </TableCell>
                     <TableCell>
                       <PriorityBadge priority={(s.priority as never) ?? null} />

@@ -1,10 +1,9 @@
-from datetime import date
-from datetime import datetime, timezone
+from datetime import date, datetime, time, timezone
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
-from sqlalchemy import select
+from sqlalchemy import DateTime, and_, cast, func, or_, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.api.deps import get_current_user
@@ -29,6 +28,7 @@ from app.core.http_utils import safe_content_disposition_filename
 from app.services.patient_crypto import escape_ilike_pattern, patient_hash
 from app.services.pdf_report import build_report_pdf
 from app.services.rbac import require_permission
+from app.services.pacs_imaging import enrich_studies_imaging
 from app.services.report_service import (
     get_latest_report,
     latest_status_map,
@@ -40,6 +40,29 @@ from app.services.system_settings import get_settings_map, is_setting_enabled
 
 
 router = APIRouter(tags=["clinical"])
+
+
+def _study_timestamp_expr():
+    """Combine study_date + study_time; midnight when time is unknown."""
+    return func.coalesce(Study.study_date + Study.study_time, cast(Study.study_date, DateTime))
+
+
+def _apply_study_datetime_filters(
+    query,
+    *,
+    from_date: date | None,
+    to_date: date | None,
+    from_time: time | None,
+    to_time: time | None,
+):
+    ts = _study_timestamp_expr()
+    if from_date:
+        start = datetime.combine(from_date, from_time or time.min)
+        query = query.where(ts >= start)
+    if to_date:
+        end = datetime.combine(to_date, to_time or time(23, 59, 59))
+        query = query.where(ts <= end)
+    return query
 
 
 @router.get("/report-templates", response_model=list[ReportTemplateOut])
@@ -130,25 +153,30 @@ def list_studies(
     last_name: str | None = None,
     from_date: date | None = None,
     to_date: date | None = None,
+    from_time: time | None = None,
+    to_time: time | None = None,
     modality: Annotated[list[str] | None, Query()] = None,
     limit: int = 50,
+    has_report: bool = False,
+    include_imaging: bool = False,
 ) -> list[StudyOut]:
     require_permission(current_user, "study:read")
     query = (
         select(Study)
         .join(Patient, Study.patient_id == Patient.id)
         .options(joinedload(Study.patient))
-        .order_by(Study.study_date.desc().nullslast())
-        .limit(min(limit, 200))
     )
     if accession_number:
         query = query.where(Study.accession_number == accession_number)
     if modality:
         query = query.where(Study.modality.in_(modality))
-    if from_date:
-        query = query.where(Study.study_date >= from_date)
-    if to_date:
-        query = query.where(Study.study_date <= to_date)
+    query = _apply_study_datetime_filters(
+        query,
+        from_date=from_date,
+        to_date=to_date,
+        from_time=from_time,
+        to_time=to_time,
+    )
     if patient_tc:
         query = query.where(Patient.patient_hash == patient_hash(patient_tc))
     if first_name:
@@ -158,6 +186,36 @@ def list_studies(
         pattern = f"%{escape_ilike_pattern(last_name)}%"
         query = query.where(Patient.name_search.ilike(pattern, escape="\\"))
 
+    if has_report:
+        report_content = or_(
+            func.length(func.trim(Report.content)) > 0,
+            and_(
+                Report.transcript.isnot(None),
+                func.length(func.trim(Report.transcript)) > 0,
+            ),
+        )
+        query = query.where(
+            Study.id.in_(select(Report.study_id).where(report_content).distinct())
+        )
+        latest_report = (
+            select(
+                Report.study_id.label("study_id"),
+                func.max(Report.created_at).label("last_report_at"),
+            )
+            .where(report_content)
+            .group_by(Report.study_id)
+            .subquery()
+        )
+        query = query.join(latest_report, Study.id == latest_report.c.study_id).order_by(
+            latest_report.c.last_report_at.desc()
+        )
+    else:
+        query = query.order_by(
+            Study.study_date.desc().nullslast(),
+            Study.study_time.desc().nullslast(),
+        )
+
+    query = query.limit(min(limit, 200))
     studies = list(db.scalars(query))
     search_metadata = {
         "patient_tc": bool(patient_tc),
@@ -166,6 +224,8 @@ def list_studies(
         "accession_number": accession_number,
         "from_date": from_date.isoformat() if from_date else None,
         "to_date": to_date.isoformat() if to_date else None,
+        "from_time": from_time.isoformat() if from_time else None,
+        "to_time": to_time.isoformat() if to_time else None,
         "modality": modality or [],
         "count": len(studies),
     }
@@ -178,7 +238,13 @@ def list_studies(
         metadata=search_metadata,
     )
     status_map = latest_status_map(db, [study.id for study in studies])
-    return [serialize_study(study, study.patient, status_map.get(study.id)) for study in studies]
+    imaging_map: dict = {}
+    if include_imaging and studies:
+        imaging_map = enrich_studies_imaging(db, studies, get_settings_map(db))
+    return [
+        serialize_study(study, study.patient, status_map.get(study.id), imaging_map.get(study.id))
+        for study in studies
+    ]
 
 
 @router.get("/studies/{study_id}", response_model=StudyOut)
@@ -194,7 +260,13 @@ def get_study(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Study not found")
     record_audit_event(db, request=request, action="study.open", resource_type="study", resource_id=study.id, actor=current_user)
     latest = get_latest_report(db, study.id)
-    return serialize_study(study, study.patient, latest.status if latest else None)
+    imaging_map = enrich_studies_imaging(db, [study], get_settings_map(db))
+    return serialize_study(
+        study,
+        study.patient,
+        latest.status if latest else None,
+        imaging_map.get(study.id),
+    )
 
 
 @router.get("/studies/{study_id}/series", response_model=list[SeriesOut])

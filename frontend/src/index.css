@@ -69,6 +69,12 @@
   --mod-us: 190 80% 42%;
   --mod-mg: 25 90% 55%;
   --mod-nm: 0 72% 56%;
+  --mod-dx: 158 58% 38%;
+  --mod-cr: 165 52% 42%;
+  --mod-pt: 318 68% 52%;
+  --mod-rf: 42 92% 48%;
+  --mod-xa: 348 72% 50%;
+  --mod-ot: 215 14% 46%;
 
   --radius: 0.7rem;
 }
@@ -178,6 +184,12 @@
   --color-mod-us: hsl(var(--mod-us));
   --color-mod-mg: hsl(var(--mod-mg));
   --color-mod-nm: hsl(var(--mod-nm));
+  --color-mod-dx: hsl(var(--mod-dx));
+  --color-mod-cr: hsl(var(--mod-cr));
+  --color-mod-pt: hsl(var(--mod-pt));
+  --color-mod-rf: hsl(var(--mod-rf));
+  --color-mod-xa: hsl(var(--mod-xa));
+  --color-mod-ot: hsl(var(--mod-ot));
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

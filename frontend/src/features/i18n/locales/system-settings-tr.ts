@@ -48,6 +48,26 @@ export const systemSettings = {
     label: "DICOMweb temel URL",
     desc: "Web görüntüleyici için WADO-RS/QIDO-RS/STOW-RS endpoint'i.",
   },
+  pacs_mwl_auto_sync: {
+    label: "İş listesi otomatik senkron",
+    desc: "İş listesi açıldığında PACS'ten Study Root Query (C-FIND) çalışır.",
+  },
+  pacs_mwl_sync_days: {
+    label: "Q/R tarih penceresi (gün)",
+    desc: "C-FIND için bugünden geriye ve ileriye kaç gün sorgulanır.",
+  },
+  pacs_query_sync_days: {
+    label: "Q/R tarih penceresi (gün)",
+    desc: "Study Root C-FIND tarih aralığı.",
+  },
+  pacs_move_destination_ae: {
+    label: "C-MOVE hedef AE",
+    desc: "Retrieve ile görüntülerin gönderileceği AE (ör. Orthanc RADIOLOGY).",
+  },
+  pacs_web_viewer_url_template: {
+    label: "PACS web görüntüleyici URL şablonu",
+    desc: "İş listesinde accession ile açılır. Yer tutucular: {accession}, {study_instance_uid}.",
+  },
   auth_ldap_enabled: {
     label: "LDAP etkin",
     desc: "LDAP/Active Directory kimlik doğrulamasını etkinleştir.",
