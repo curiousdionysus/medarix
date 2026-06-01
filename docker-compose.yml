@@ -1,0 +1,144 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - medarix-network
+
+  whisper:
+    image: fedirz/faster-whisper-server:latest-cuda
+    container_name: whisper
+    restart: unless-stopped
+    ports:
+      - "10300:8000"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - medarix-network
+
+  postgres:
+    image: postgres:16
+    container_name: medarix-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-medarix}
+      POSTGRES_USER: ${POSTGRES_USER:-medarix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medarix}
+    ports:
+      - "127.0.0.1:15432:5432"
+    volumes:
+      - medarix-postgres:/var/lib/postgresql/data
+      - ./backend/migrations/001_initial.sql:/docker-entrypoint-initdb.d/001_initial.sql:ro
+      - ./backend/migrations/002_dictation_recordings.sql:/docker-entrypoint-initdb.d/002_dictation_recordings.sql:ro
+      - ./backend/migrations/003_report_transcript_patient_search.sql:/docker-entrypoint-initdb.d/003_report_transcript_patient_search.sql:ro
+      - ./backend/migrations/004_report_versions_priority.sql:/docker-entrypoint-initdb.d/004_report_versions_priority.sql:ro
+      - ./backend/migrations/005_flexible_roles.sql:/docker-entrypoint-initdb.d/005_flexible_roles.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medarix -d medarix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - medarix-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: medarix-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:16379:6379"
+    networks:
+      - medarix-network
+
+  orthanc:
+    image: orthancteam/orthanc:latest
+    container_name: medarix-orthanc
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8042:8042"
+      - "127.0.0.1:4242:4242"
+    environment:
+      ORTHANC__NAME: RADIOLOGY-ORTHANC
+      ORTHANC__DICOM_AET: RADIOLOGY
+      ORTHANC__AUTHENTICATION_ENABLED: "true"
+      ORTHANC__REGISTERED_USERS: '{"medarix": "${ORTHANC_PASSWORD:-orthanc-change-me}"}'
+      ORTHANC__DICOM_WEB__ENABLE: "true"
+      ORTHANC__DICOM_WEB__ROOT: /dicom-web/
+      ORTHANC__POSTGRESQL__ENABLE_INDEX: "false"
+    volumes:
+      - medarix-orthanc:/var/lib/orthanc/db
+    networks:
+      - medarix-network
+
+  medarix-backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: medarix/backend:local
+    container_name: medarix-backend
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MEDARIX_DATABASE_HOST: ${POSTGRES_HOST:-postgres}
+      MEDARIX_DATABASE_PORT: ${POSTGRES_PORT:-5432}
+      MEDARIX_DATABASE_NAME: ${POSTGRES_DB:-medarix}
+      MEDARIX_DATABASE_USER: ${POSTGRES_USER:-medarix}
+      MEDARIX_DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-medarix}
+      MEDARIX_REDIS_URL: ${MEDARIX_REDIS_URL:-redis://medarix-redis:6379/0}
+      MEDARIX_OLLAMA_BASE_URL: ${MEDARIX_OLLAMA_BASE_URL:-http://ollama:11434/v1}
+      MEDARIX_WHISPER_BASE_URL: ${MEDARIX_WHISPER_BASE_URL:-http://whisper:8000/v1}
+      MEDARIX_DICOMWEB_BASE_URL: ${MEDARIX_DICOMWEB_BASE_URL:-http://orthanc:8042/dicom-web}
+      MEDARIX_ORTHANC_USERNAME: ${MEDARIX_ORTHANC_USERNAME:-medarix}
+      MEDARIX_ORTHANC_PASSWORD: ${ORTHANC_PASSWORD:-orthanc-change-me}
+    ports:
+      - "8088:8088"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      orthanc:
+        condition: service_started
+      ollama:
+        condition: service_started
+      whisper:
+        condition: service_started
+    networks:
+      - medarix-network
+
+networks:
+  medarix-network:
+    name: medarix-network
+
+volumes:
+  ollama:
+    name: medarix-ollama-data
+  medarix-postgres:
+    name: medarix-postgres
+  medarix-orthanc:
+    name: medarix-orthanc

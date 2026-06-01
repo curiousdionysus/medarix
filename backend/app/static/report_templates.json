@@ -1,0 +1,332 @@
+[
+  {
+    "key": "ready-ct-hrct-thorax",
+    "modality": "CT",
+    "title": "HRCT Toraks",
+    "source": "Hazır",
+    "content": "İNCELEME:\nHRCT Toraks\n\nTEKNİK:\nToraks girişi düzeyinden üst abdomen seviyesine kadar aksiyel kesitler elde edildi. Gerektiğinde koronal ve sagittal reformasyon görüntüleri değerlendirildi.\n\nKLİNİK BİLGİ:\n- Transkriptte klinik bilgi verilmişse semptom, ön tanı ve ilgili klinik öyküyü kısa biçimde yaz.\n- Hasta adı, yaş, cinsiyet ve kimlik bilgilerini rapora ekleme.\n- Klinik bilgi verilmemişse: Klinik bilgi belirtilmedi.\n\nKARŞILAŞTIRMA:\n- Önceki tetkik belirtilmişse anlamlı değişiklikleri karşılaştırmalı yaz.\n- Belirtilmemişse: Karşılaştırma için önceki inceleme mevcut değildir.\n\nBULGULAR:\n- Önce patolojik bulguları anatomik lokalizasyon, dağılım, morfoloji ve yayılım ilişkileriyle belirt.\n- Benzer bulgular farklı lokalizasyonlarda geçiyorsa tek, kapsamlı cümlede birleştir.\n- Transkriptte geçmeyen ancak HRCT toraksta değerlendirilen yapıları tek tek normal olarak raporla; tümünü tek bir 'diğerleri normal' cümlesinde toplama.\n- Akciğer parankimi: nodül, kitle, konsolidasyon, buzlu cam opasitesi, retikülasyon, bal peteği, traksiyon bronşektazisi, amfizem ve hava hapsi açısından değerlendir.\n- Plevra: efüzyon, kalınlaşma ve pnömotoraks açısından değerlendir.\n- Mediasten ve hiler bölgeler: lenf nodu büyümesi ve kitle açısından değerlendir.\n- Trakea ve ana bronşlar, kalp/perikard, özofagus, diyafram, göğüs duvarı, kemik yapılar ve izlenen üst abdomeni ayrı maddeler halinde yaz.\n\nSONUÇ:\n- Bulgulardan kısa ve klinik olarak anlamlı sonuç maddeleri oluştur.\n- Gerekirse olası ayırıcı tanıları belirt; transkriptte olmayan patolojiyi uydurma.\n\nÖNERİ:\n- Klinik korelasyon, takip görüntüleme veya ilgili branş önerisini bulguya göre yaz.\n- Şüpheli neoplastik lezyonda histopatolojik korelasyon/ileri değerlendirme öner."
+  },
+  {
+    "key": "ready-ct-brain",
+    "modality": "CT",
+    "title": "BT Beyin",
+    "source": "Hazır",
+    "content": "İNCELEME:\nBT Beyin\n\nTEKNİK:\nKontrastsız/kontrastlı aksiyel beyin BT kesitleri elde edildi. Gerektiğinde multiplanar reformasyonlar değerlendirildi.\n\nKLİNİK BİLGİ:\nTranskriptte belirtilen başvuru nedeni, travma, nörolojik defisit, baş ağrısı, inme şüphesi veya operasyon öyküsünü kısa yaz. Kimlik bilgisi ekleme.\n\nKARŞILAŞTIRMA:\nÖnceki görüntüleme varsa kanama, enfarkt, kitle etkisi ve ventrikül boyutları açısından değişimi belirt. Yoksa önceki inceleme bulunmadığını yaz.\n\nBULGULAR:\n- İntrakraniyal kanama, akut enfarkt bulgusu, ekstraaksiyel koleksiyon ve kitle etkisini değerlendir.\n- Gri-beyaz cevher ayrımı, bazal ganglionlar, talamus, beyin sapı ve serebellumu ayrı ayrı ele al.\n- Ventrikül sistemi, sulkuslar, sisternalar ve orta hat yapıları değerlendir.\n- Parankimal hipodensite, ödem, kalsifikasyon, kitle veya metastaz şüphesi varsa lokalizasyon ve boyutla yaz.\n- Kalvaryum, kafa tabanı, paranazal sinüsler ve mastoid hücreleri belirt.\n\nSONUÇ:\nAkut patoloji varsa önceliklendir. Normal ise akut intrakraniyal kanama, kitle etkisi veya belirgin akut enfarkt lehine bulgu olmadığını açık yaz.\n\nÖNERİ:\nKlinik gereklilikte MRG, difüzyon MRG veya takip BT öner."
+  },
+  {
+    "key": "ready-ct-abdomen",
+    "modality": "CT",
+    "title": "BT Abdomen/Pelvis",
+    "source": "Hazır",
+    "content": "İNCELEME:\nBT Abdomen/Pelvis\n\nTEKNİK:\nAbdomen ve pelvis bölgesinden aksiyel kesitler elde edildi. Kontrast fazı transkriptte belirtilmişse yaz; belirtilmemişse teknik bilgiyi nötr bırak.\n\nKLİNİK BİLGİ:\nAğrı lokalizasyonu, malignite öyküsü, enfeksiyon, taş, travma veya operasyon öyküsü verilmişse kısa yaz. Kimlik bilgisi ekleme.\n\nKARŞILAŞTIRMA:\nÖnceki tetkik varsa lezyon boyutu, koleksiyon, lenf nodu ve organ bulgularındaki değişimi belirt.\n\nBULGULAR:\n- Karaciğer: boyut, kontur, parankim dansitesi, fokal lezyon ve safra yolları.\n- Safra kesesi ve pankreas: taş, duvar kalınlığı, inflamasyon, kitle ve kanal dilatasyonu.\n- Dalak ve adrenal bezler.\n- Böbrekler: taş, hidronefroz, kitle, kist, perinefrik değişiklikler.\n- Üreterler ve mesane.\n- Mide, ince barsak, kolon ve apendiks: duvar kalınlaşması, obstrüksiyon, inflamasyon ve serbest hava.\n- Periton/retroperiton: serbest sıvı, koleksiyon, lenfadenopati.\n- Pelvik organlar, damar yapıları, kemik yapılar ve yumuşak dokular.\n\nSONUÇ:\nEn önemli patolojileri kısa maddeler halinde yaz. Acil bulguları ilk sıraya al.\n\nÖNERİ:\nKlinik/laboratuvar korelasyon, US/MR/kontrastlı BT veya takip önerisini bulguya göre belirt."
+  },
+  {
+    "key": "ready-mr-brain",
+    "modality": "MR",
+    "title": "MR Beyin",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMR Beyin\n\nTEKNİK:\nMultiplanar multisekans beyin MRG incelemesi yapıldı. Kontrast kullanımı transkriptte belirtilmişse yaz.\n\nKLİNİK BİLGİ:\nNörolojik semptom, nöbet, demiyelinizan hastalık, tümör, enfeksiyon veya operasyon öyküsü verilmişse kısa yaz. Kimlik bilgisi ekleme.\n\nKARŞILAŞTIRMA:\nÖnceki MRG/BT varsa lezyon sayısı, boyutu, kontrastlanma ve difüzyon kısıtlılığı açısından değişimi belirt.\n\nBULGULAR:\n- Difüzyon kısıtlılığı ve akut iskemi bulgularını değerlendir.\n- Serebral hemisferler, beyaz cevher, korteks, bazal ganglionlar, talamus, beyin sapı ve serebellumu ayrı ele al.\n- Kitle, ödem, kanama sekeli, demiyelinizan plak, gliozis veya atrofi varsa lokalizasyonla yaz.\n- Ventriküller, sulkuslar, sisternalar ve orta hat yapıları.\n- Sellar/parasellar alan, kranyoservikal bileşke, orbitanın izlenen kısımları, paranazal sinüsler ve mastoid hücreler.\n\nSONUÇ:\nAkut ve klinik açıdan anlamlı bulguları öncelikle yaz. Normal ise akut iskemik lezyon, kitle etkisi veya patolojik kontrastlanma saptanmadığını belirt.\n\nÖNERİ:\nKlinik gereklilikte kontrastlı MRG, perfüzyon, MR anjiyografi veya takip öner."
+  },
+  {
+    "key": "ready-mr-abdomen",
+    "modality": "MR",
+    "title": "MR Abdomen",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMR Abdomen\n\nTEKNİK:\nAbdomen bölgesi multiplanar multisekans MRG ile değerlendirildi. Kontrast kullanımı, dinamik fazlar, MRCP sekansları veya difüzyon ağırlıklı görüntüler transkriptte belirtilmişse yaz.\n\nKLİNİK BİLGİ:\nKarın ağrısı, karaciğer lezyonu, pankreatobiliyer patoloji, safra yolu dilatasyonu, malignite takibi, enfeksiyon, operasyon öyküsü veya laboratuvar anormalliği verilmişse kısa yaz. Kimlik bilgisi ekleme.\n\nKARŞILAŞTIRMA:\nÖnceki US/BT/MR varsa lezyon boyutu, sinyal özellikleri, kontrastlanma paterni, safra yolu/pankreatik kanal çapı ve organ bulgularındaki değişimi belirt.\n\nBULGULAR:\n- Karaciğer: boyut, kontur, parankim sinyali, yağlanma/demir birikimi, fokal lezyon, difüzyon kısıtlılığı ve kontrastlanma paterni.\n- İntrahepatik ve ekstrahepatik safra yolları: dilatasyon, taş, darlık veya obstrüksiyon bulguları.\n- Safra kesesi: taş, çamur, duvar kalınlığı, perikolesistik sıvı ve kitle/polipoid lezyon.\n- Pankreas: boyut, parankim sinyali, kitle, inflamasyon, kist, ana pankreatik kanal çapı ve peripankreatik değişiklikler.\n- Dalak: boyut, parankim sinyali ve fokal lezyon.\n- Adrenal bezler: nodül, kalınlaşma veya kitle.\n- Böbrekler: boyut, parankim kalınlığı, kist, solid lezyon, hidronefroz ve perirenal değişiklikler.\n- Mide, izlenen barsak ansları, periton/retroperiton, lenf nodları, damar yapıları, serbest sıvı ve kemik yapılar.\n\nSONUÇ:\nKlinik açıdan en önemli patolojileri kısa ve öncelik sırasına göre yaz. Lezyon varsa lokalizasyon, boyut ve karakterizasyonu belirt; transkriptte olmayan bulguyu ekleme.\n\nÖNERİ:\nBulgulara göre klinik/laboratuvar korelasyon, hedef US, kontrastlı MR/BT, MRCP, takip görüntüleme veya histopatolojik korelasyon önerisini belirt."
+  },
+  {
+    "key": "ready-mr-lumbar",
+    "modality": "MR",
+    "title": "MR Lomber Vertebra",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMR Lomber Vertebra\n\nTEKNİK:\nLomber vertebral kolon multiplanar multisekans MRG ile değerlendirildi.\n\nKLİNİK BİLGİ:\nBel ağrısı, radikülopati, operasyon öyküsü, travma veya enfeksiyon/malignite şüphesi verilmişse kısa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki inceleme varsa disk protrüzyonu, kanal darlığı ve sinir kökü basısı açısından değişimi belirt.\n\nBULGULAR:\n- Lomber lordoz, dizilim, vertebra korpus yükseklikleri ve kemik iliği sinyali.\n- Konus medullaris seviyesi ve kauda ekuina lifleri.\n- Her disk düzeyini ayrı değerlendir: T12-L1, L1-L2, L2-L3, L3-L4, L4-L5, L5-S1.\n- Disk dejenerasyonu, bulging, protrüzyon/ekstrüzyon, annüler yırtık, santral kanal, lateral reses ve nöral foramen darlığı.\n- Faset artropatisi, ligamentum flavum hipertrofisi, spondilolistezis ve paravertebral yumuşak dokular.\n\nSONUÇ:\nSinir kökü basısı ve belirgin kanal/foraminal darlığı seviyeleriyle özetle.\n\nÖNERİ:\nNörolojik muayene korelasyonu, fizik tedavi/beyin cerrahisi değerlendirmesi veya takip öner."
+  },
+  {
+    "key": "ready-mr-knee",
+    "modality": "MR",
+    "title": "MR Diz",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMR Diz\n\nTEKNİK:\nDiz eklemi multiplanar multisekans MRG ile değerlendirildi.\n\nKLİNİK BİLGİ:\nTravma, ağrı, kilitlenme, instabilite, operasyon veya spor yaralanması öyküsü verilmişse kısa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki inceleme varsa menisküs, bağ ve kıkırdak bulgularındaki değişimi belirt.\n\nBULGULAR:\n- Medial ve lateral menisküs: yırtık, dejenerasyon, ekstrüzyon.\n- Ön çapraz bağ, arka çapraz bağ, medial/lateral kollateral bağ kompleksleri.\n- Ekstansör mekanizma: quadriseps tendonu, patellar tendon, patella ve retinakulumlar.\n- Kıkırdak yüzeyler: patellofemoral, medial ve lateral kompartman.\n- Kemik iliği ödemi, kontüzyon, osteokondral lezyon veya kırık.\n- Eklem sıvısı, sinovit, Baker kisti, bursit ve çevre yumuşak dokular.\n\nSONUÇ:\nKlinik açıdan anlamlı menisküs/bağ/kıkırdak patolojilerini madde madde özetle.\n\nÖNERİ:\nOrtopedi değerlendirmesi, konservatif tedavi/takip veya artroskopik korelasyon önerisini bulguya göre yaz."
+  },
+  {
+    "key": "ready-xr-chest",
+    "modality": "XR",
+    "title": "Akciğer Grafisi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nPA/Lateral Akciğer Grafisi\n\nTEKNİK:\nAkciğer grafisi uygun projeksiyonda elde edildi. Projeksiyon bilgisi transkriptte varsa belirt.\n\nKLİNİK BİLGİ:\nÖksürük, ateş, dispne, travma, preop değerlendirme veya kontrol nedeni verilmişse kısa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki grafi varsa infiltrasyon, plevral sıvı, kardiyotorasik oran ve cihaz/tüp pozisyonu açısından değişimi belirt.\n\nBULGULAR:\n- Akciğer alanlarında infiltrasyon, konsolidasyon, nodül/kitle, atelektazi ve interstisyel belirginleşme.\n- Plevral efüzyon ve pnömotoraks.\n- Kalp boyutu ve mediasten konturu.\n- Hiler yapılar, diyafram konturları ve kostofrenik sinüsler.\n- Kemik toraks ve izlenen yumuşak dokular.\n- Tüp/kateter/protez varsa pozisyonunu belirt.\n\nSONUÇ:\nAkut kardiyopulmoner patoloji varsa kısa yaz; normal ise belirgin akut kardiyopulmoner patoloji saptanmadığını belirt.\n\nÖNERİ:\nKlinik gereklilikte takip grafi, toraks BT veya klinik korelasyon öner."
+  },
+  {
+    "key": "ready-xr-skeletal",
+    "modality": "XR",
+    "title": "Direkt Kemik Grafisi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nDirekt Kemik/Eklem Grafisi\n\nTEKNİK:\nİlgili bölgeden en az iki yönlü direkt grafiler elde edildi. Bölge ve projeksiyonları transkripte göre yaz.\n\nKLİNİK BİLGİ:\nTravma, ağrı, şişlik, deformite, kontrol veya postoperatif değerlendirme nedeni varsa kısa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki grafi varsa kırık hattı, kallus, implant pozisyonu ve eklem ilişkisi açısından değişimi belirt.\n\nBULGULAR:\n- Kortikal bütünlük ve kırık/çıkık varlığı.\n- Eklem aralığı, dizilim, subluksasyon/luksasyon.\n- Dejeneratif değişiklikler, osteofit, skleroz, erozyon veya litik/sklerotik lezyon.\n- Yumuşak doku şişliği, yabancı cisim veya kalsifikasyon.\n- İmplant varsa pozisyon, gevşeme veya komplikasyon bulguları.\n\nSONUÇ:\nKırık/çıkık veya önemli patolojiyi anatomik lokalizasyonla yaz. Normal ise akut osseöz patoloji izlenmediğini belirt.\n\nÖNERİ:\nKlinik şüphe sürüyorsa BT/MR veya kontrol grafi öner."
+  },
+  {
+    "key": "ready-us-abdomen",
+    "modality": "US",
+    "title": "Tüm Abdomen US",
+    "source": "Hazır",
+    "content": "İNCELEME:\nTüm Abdomen Ultrasonografi\n\nTEKNİK:\nAbdomen ultrasonografik olarak değerlendirildi. Görüntü kalitesini etkileyen gaz/obezite gibi faktörler varsa belirt.\n\nKLİNİK BİLGİ:\nKarın ağrısı, sarılık, taş şüphesi, karaciğer enzim yüksekliği, malignite takibi veya kontrol nedeni varsa kısa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki US/BT/MR varsa kist, taş, hidronefroz, lezyon ve organ boyutları açısından değişimi belirt.\n\nBULGULAR:\n- Karaciğer boyutu, konturu, parankim ekojenitesi, fokal lezyon ve intrahepatik safra yolları.\n- Safra kesesi: taş, çamur, duvar kalınlığı, perikolesistik sıvı. Koledok çapı.\n- Pankreas izlenen kısımları.\n- Dalak boyutu ve parankimi.\n- Böbrekler: boyut, parankim kalınlığı, ekojenite, taş, kist, kitle, hidronefroz.\n- Mesane, prostat/uterus-overler transkripte göre.\n- Aorta, serbest sıvı ve lenfadenopati açısından değerlendirme.\n\nSONUÇ:\nEn önemli US bulgularını kısa maddeler halinde yaz.\n\nÖNERİ:\nKlinik/laboratuvar korelasyon, kontrastlı BT/MR, Doppler US veya takip US önerisini bulguya göre belirt."
+  },
+  {
+    "key": "ready-us-thyroid",
+    "modality": "US",
+    "title": "Tiroid US",
+    "source": "Hazır",
+    "content": "İNCELEME:\nTiroid Ultrasonografi\n\nTEKNİK:\nTiroid bezi ve servikal bölge yüksek frekanslı lineer prob ile değerlendirildi.\n\nKLİNİK BİLGİ:\nNodül, guatr, tiroid fonksiyon bozukluğu, takip veya biyopsi öyküsü varsa kısa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki US varsa nodül boyutu, ekojenite ve şüpheli özelliklerdeki değişimi belirt.\n\nBULGULAR:\n- Sağ ve sol lob ile istmus boyutları.\n- Parankim ekojenitesi ve heterojenite/vaskülarite.\n- Nodüller: lokalizasyon, üç boyut, solid/kistik yapı, ekojenite, kenar, kalsifikasyon, taller-than-wide görünüm ve TI-RADS uyumlu risk özellikleri.\n- Servikal lenf nodları: patolojik boyut/morfoloji varlığı.\n\nSONUÇ:\nAnlamlı nodülleri boyut ve risk özellikleriyle özetle.\n\nÖNERİ:\nTI-RADS'a göre takip US veya İİAB önerisini belirt; küçük benign görünümlü nodüllerde klinik takip öner."
+  },
+  {
+    "key": "ready-mg-breast",
+    "modality": "MG",
+    "title": "Mamografi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nBilateral Mamografi\n\nTEKNİK:\nHer iki meme CC ve MLO projeksiyonlarda değerlendirildi. Ek spot/magnifikasyon veya tomosentez varsa belirt.\n\nKLİNİK BİLGİ:\nTarama, ele gelen kitle, ağrı, akıntı, operasyon/biopsi öyküsü veya aile öyküsü varsa kısa yaz. Kimlik bilgisi ekleme.\n\nKARŞILAŞTIRMA:\nÖnceki mamografi/US/MR varsa kitle, asimetri, kalsifikasyon ve yapısal distorsiyon açısından değişimi belirt.\n\nBULGULAR:\n- Meme kompozisyonu/densitesi.\n- Sağ ve sol meme ayrı değerlendir: kitle, fokal asimetri, yapısal distorsiyon, mikrokalsifikasyon dağılımı ve morfolojisi.\n- Cilt, meme başı, aksiller alan ve postoperatif değişiklikler.\n- Şüpheli bulgu varsa lokalizasyonu saat kadranı/derinlik veya kadran ile yaz.\n\nSONUÇ:\nBI-RADS kategorisini ve gerekçesini belirt. Şüpheli bulguları kısa maddelerle özetle.\n\nÖNERİ:\nBI-RADS'a göre hedef US, spot magnifikasyon, MR, biyopsi veya rutin tarama öner."
+  },
+  {
+    "key": "ready-nm-bone",
+    "modality": "NM",
+    "title": "Kemik Sintigrafisi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nTüm Vücut Kemik Sintigrafisi\n\nTEKNİK:\nRadyofarmasötik uygulaması sonrası tüm vücut anterior ve posterior görüntüler elde edildi. SPECT/BT varsa ayrıca belirt.\n\nKLİNİK BİLGİ:\nMalignite evreleme/takip, kemik ağrısı, travma, enfeksiyon veya protez değerlendirme nedeni varsa kısa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki sintigrafi/PET/BT/MR varsa tutulum sayısı, yoğunluğu ve lokalizasyon değişimini belirt.\n\nBULGULAR:\n- Aksiyel ve apendiküler iskelette fokal artmış/azalmış aktivite tutulumlarını anatomik lokalizasyonla yaz.\n- Dejeneratif paterne uyan eklem çevresi tutulumları ile metastaz açısından şüpheli tutulumları ayır.\n- Kafatası, omurga, kostalar, pelvis, ekstremiteler ve protez alanları ayrı değerlendirilir.\n- Böbrek ve mesane aktivitesi gibi fizyolojik dağılımı belirt.\n\nSONUÇ:\nMetastaz lehine şüpheli odak varsa lokalizasyonlarıyla yaz. Dejeneratif değişiklikler varsa ayırıcı olarak belirt.\n\nÖNERİ:\nŞüpheli odaklar için korelatif BT/MR/SPECT-BT veya klinik takip öner."
+  }
+,
+  {
+    "key": "ready-ct-thorax",
+    "modality": "CT",
+    "title": "BT Toraks",
+    "source": "Hazır",
+    "content": "İNCELEME:\nBT Toraks\n\nTEKNİK:\nToraks bölgesi aksiyel BT kesitleri ile değerlendirildi. Kontrast kullanımı ve faz bilgisi transkriptte varsa yaz.\n\nKLİNİK BİLGİ:\nDispne, öksürük, enfeksiyon, malignite, travma veya takip nedeni varsa kısa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki BT/grafi varsa nodül, infiltrasyon, efüzyon ve lenf nodu değişimini belirt.\n\nBULGULAR:\n- Akciğer parankimi: nodül, kitle, konsolidasyon, buzlu cam, atelektazi, amfizem ve interstisyel bulgular.\n- Plevra: efüzyon, kalınlaşma, pnömotoraks.\n- Mediasten/hilus: lenf nodu, kitle, vasküler yapılar.\n- Kalp/perikard, trakeobronşiyal ağaç, özofagus, göğüs duvarı, kemik yapılar ve izlenen üst abdomen.\n\nSONUÇ:\nKlinik açıdan anlamlı toraks bulgularını önceliklendir.\n\nÖNERİ:\nGerekirse takip BT, PET/BT, histopatolojik korelasyon veya klinik korelasyon öner."
+  },
+  {
+    "key": "ready-ct-pulmonary-angiography",
+    "modality": "CT",
+    "title": "BT Pulmoner Anjiyografi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nBT Pulmoner Anjiyografi\n\nTEKNİK:\nPulmoner arter kontrast opasifikasyonu sonrası toraks BT anjiyografi kesitleri elde edildi. Teknik kalite ve artefakt varsa belirt.\n\nKLİNİK BİLGİ:\nPulmoner emboli şüphesi, dispne, göğüs ağrısı, D-dimer yüksekliği veya risk faktörleri varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki anjiyografi/BT varsa emboli yükü ve parankim bulgularındaki değişimi belirt.\n\nBULGULAR:\n- Ana, lobar, segmenter ve subsegmenter pulmoner arterlerde dolum defekti.\n- Sağ kalp yüklenme bulguları, pulmoner arter çapı, kardiyak/perikardiyal bulgular.\n- Akciğer parankimi, plevra, mediasten, hiler alanlar, kemik yapılar ve üst abdomen.\n\nSONUÇ:\nEmboli varsa lokalizasyon ve yükü belirt; yoksa pulmoner emboli lehine dolum defekti izlenmediğini yaz.\n\nÖNERİ:\nKlinik gereklilikte takip, Doppler US veya tedavi yanıt değerlendirmesi öner."
+  },
+  {
+    "key": "ready-ct-neck",
+    "modality": "CT",
+    "title": "BT Boyun",
+    "source": "Hazır",
+    "content": "İNCELEME:\nBT Boyun\n\nTEKNİK:\nBoyun bölgesi aksiyel BT kesitleri ile değerlendirildi. Kontrast kullanımı transkriptte varsa belirt.\n\nKLİNİK BİLGİ:\nKitle, lenfadenopati, enfeksiyon, travma, malignite veya postoperatif takip nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki BT/MR/US varsa lezyon ve lenf nodu değişimini belirt.\n\nBULGULAR:\n- Nazofarenks, orofarenks, hipofarenks, larenks ve hava yolu açıklığı.\n- Tükürük bezleri, tiroid, vasküler yapılar, kas-planlar ve derin boyun aralıkları.\n- Servikal lenf nodları: seviye, boyut, nekroz ve şüpheli morfoloji.\n- Kemik yapılar, servikal vertebralar ve akciğer apeksleri.\n\nSONUÇ:\nKitle, koleksiyon veya patolojik lenf nodu varsa lokalizasyonla özetle.\n\nÖNERİ:\nKlinik gereklilikte US, MR, biyopsi veya takip öner."
+  },
+  {
+    "key": "ready-ct-sinus",
+    "modality": "CT",
+    "title": "BT Paranazal Sinüs",
+    "source": "Hazır",
+    "content": "İNCELEME:\nBT Paranazal Sinüs\n\nTEKNİK:\nParanazal sinüsler ince kesit BT ile değerlendirildi. Koronal/sagittal reformasyon varsa belirt.\n\nKLİNİK BİLGİ:\nSinüzit, nazal obstrüksiyon, polipozis, cerrahi planlama veya travma bilgisi varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki BT varsa mukozal kalınlaşma, opasifikasyon ve cerrahi değişiklikleri karşılaştır.\n\nBULGULAR:\n- Maksiller, frontal, etmoid ve sfenoid sinüs havalanması/mukozası.\n- Osteomeatal kompleksler, infundibulumlar, nazal septum ve konkalar.\n- Polip/kitle, sıvı seviyesi, kemik destrüksiyonu, varyasyonlar ve postoperatif değişiklikler.\n\nSONUÇ:\nSinüzit/polipozis veya anatomik varyasyonları klinik önem sırasıyla yaz.\n\nÖNERİ:\nKBB korelasyonu veya cerrahi planlama için değerlendirme öner."
+  },
+  {
+    "key": "ready-ct-urinary-stone",
+    "modality": "CT",
+    "title": "BT Üriner Taş",
+    "source": "Hazır",
+    "content": "İNCELEME:\nKontrastsız BT Üriner Sistem\n\nTEKNİK:\nBöbreklerden mesane tabanına kadar kontrastsız aksiyel BT kesitleri elde edildi.\n\nKLİNİK BİLGİ:\nYan ağrısı, hematüri, taş öyküsü, enfeksiyon veya obstrüksiyon şüphesi varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki BT/US varsa taş boyutu, yeri ve hidronefroz değişimini belirt.\n\nBULGULAR:\n- Böbrekler: taş, hidronefroz, parankim, kist/kitle şüphesi.\n- Üreterler: taş lokalizasyonu, boyutu, periüreteral değişiklik ve dilatasyon.\n- Mesane, prostat/uterus-overler, serbest sıvı, lenf nodları ve kemik yapılar.\n\nSONUÇ:\nTaş varsa taraf, seviye, boyut ve obstrüksiyon derecesini yaz.\n\nÖNERİ:\nÜroloji korelasyonu, takip US/BT veya klinik/laboratuvar korelasyon öner."
+  },
+  {
+    "key": "ready-ct-spine",
+    "modality": "CT",
+    "title": "BT Vertebra",
+    "source": "Hazır",
+    "content": "İNCELEME:\nBT Vertebra\n\nTEKNİK:\nİlgili vertebral segment aksiyel BT kesitleri ve multiplanar reformasyonlarla değerlendirildi.\n\nKLİNİK BİLGİ:\nTravma, ağrı, operasyon, enfeksiyon, malignite veya kırık şüphesi varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki BT/MR/grafi varsa kırık, dizilim ve kanal darlığı değişimini belirt.\n\nBULGULAR:\n- Lordoz/kifoz, dizilim, korpus yükseklikleri ve kortikal bütünlük.\n- Kırık hattı, retropulsiyon, spinal kanal darlığı ve posterior elemanlar.\n- Disk aralıkları, faset eklemler, dejeneratif değişiklikler ve paravertebral yumuşak dokular.\n\nSONUÇ:\nKırık/instabilite veya önemli dejeneratif bulguları seviye belirterek yaz.\n\nÖNERİ:\nGerekirse MR, nöroşirürji/ortopedi değerlendirmesi veya takip öner."
+  },
+  {
+    "key": "ready-ct-angiography",
+    "modality": "CT",
+    "title": "BT Anjiyografi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nBT Anjiyografi\n\nTEKNİK:\nİlgili vasküler bölge kontrastlı BT anjiyografi tekniği ile değerlendirildi. İncelenen bölgeyi transkripte göre yaz.\n\nKLİNİK BİLGİ:\nAnevrizma, stenoz, diseksiyon, emboli, travma veya preoperatif planlama nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki anjiyografi/BT/MR varsa damar çapı ve stenoz değişimini belirt.\n\nBULGULAR:\n- Arteriyel yapıların açıklığı, stenoz/oklüzyon, plak, trombüs, diseksiyon ve anevrizma.\n- Kollateral dolaşım, vasküler varyasyonlar, çevre organ/parankim bulguları.\n- Venöz yapılar ve nonvasküler ek bulgular.\n\nSONUÇ:\nKritik stenoz, oklüzyon, diseksiyon veya anevrizmayı lokalizasyon ve ölçümle özetle.\n\nÖNERİ:\nKlinik gereklilikte Doppler, DSA, vasküler cerrahi/girişimsel radyoloji değerlendirmesi öner."
+  },
+  {
+    "key": "ready-mr-pituitary",
+    "modality": "MR",
+    "title": "MR Hipofiz",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMR Hipofiz\n\nTEKNİK:\nSellar/parasellar bölge ince kesit multiplanar MRG ile değerlendirildi. Dinamik kontrastlı sekans varsa belirt.\n\nKLİNİK BİLGİ:\nHormon yüksekliği, hipofiz adenomu, görme alanı defekti veya takip nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki MR varsa lezyon boyutu, kontrastlanma ve komşuluk ilişkilerindeki değişimi belirt.\n\nBULGULAR:\n- Hipofiz bezi boyutu, konturu ve sinyal/kontrastlanma özellikleri.\n- Mikro/makroadenom, kistik lezyon, hemoraji veya invazyon bulguları.\n- İnfundibulum, optik kiazma, kavernöz sinüsler, karotis akımları ve parasellar yapılar.\n\nSONUÇ:\nLezyon varsa boyut, lokalizasyon ve komşuluk ilişkisiyle özetle.\n\nÖNERİ:\nEndokrinoloji, nöroşirürji veya takip MR önerisini bulguya göre belirt."
+  },
+  {
+    "key": "ready-mr-orbit",
+    "modality": "MR",
+    "title": "MR Orbita",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMR Orbita\n\nTEKNİK:\nOrbitalar multiplanar multisekans MRG ile değerlendirildi. Kontrast kullanımı transkriptte varsa yaz.\n\nKLİNİK BİLGİ:\nGörme kaybı, optik nörit, kitle, travma, tiroid orbitopati veya enfeksiyon bilgisi varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki MR/BT varsa kas, optik sinir veya lezyon değişimini belirt.\n\nBULGULAR:\n- Globlar, lensler, retrobulber yağ planları ve lakrimal bezler.\n- Optik sinirler, optik kılıf kompleksi ve kiazmanın izlenen kısmı.\n- Ekstraoküler kaslar, orbital apeks, kavernöz sinüsler ve paranazal sinüsler.\n- Kitle, inflamasyon, difüzyon kısıtlılığı veya kontrastlanma varsa lokalizasyonla yaz.\n\nSONUÇ:\nOrbital patolojileri klinik önem sırasıyla yaz.\n\nÖNERİ:\nGöz hastalıkları/nöroloji korelasyonu veya takip MR öner."
+  },
+  {
+    "key": "ready-mr-spine-cervical",
+    "modality": "MR",
+    "title": "MR Servikal Vertebra",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMR Servikal Vertebra\n\nTEKNİK:\nServikal vertebral kolon multiplanar multisekans MRG ile değerlendirildi.\n\nKLİNİK BİLGİ:\nBoyun ağrısı, radikülopati, miyelopati, travma, operasyon veya enfeksiyon/malignite şüphesi varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki inceleme varsa disk, kanal darlığı ve kord sinyali değişimini belirt.\n\nBULGULAR:\n- Servikal lordoz, dizilim, korpus yükseklikleri ve kemik iliği sinyali.\n- Spinal kord kalınlığı/sinyali ve kranyoservikal bileşke.\n- C2-3'ten C7-T1'e kadar disk, kanal, lateral reses ve foraminal darlık.\n- Faset/uncovertebral artropati, ligamentöz yapılar ve paravertebral yumuşak dokular.\n\nSONUÇ:\nKord basısı/sinyal değişikliği ve belirgin darlıkları seviye belirterek özetle.\n\nÖNERİ:\nNörolojik muayene, beyin cerrahisi/fizik tedavi veya takip öner."
+  },
+  {
+    "key": "ready-mr-spine-thoracic",
+    "modality": "MR",
+    "title": "MR Torakal Vertebra",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMR Torakal Vertebra\n\nTEKNİK:\nTorakal vertebral kolon multiplanar multisekans MRG ile değerlendirildi.\n\nKLİNİK BİLGİ:\nSırt ağrısı, miyelopati, travma, enfeksiyon, malignite veya operasyon öyküsü varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki MR/BT varsa kırık, lezyon ve kanal darlığı değişimini belirt.\n\nBULGULAR:\n- Torakal kifoz, dizilim, korpus yükseklikleri ve kemik iliği sinyali.\n- Torakal spinal kord sinyali ve kalibrasyonu.\n- Disk protrüzyonu/herniasyon, kanal darlığı, foraminal darlık ve faset değişiklikleri.\n- Paravertebral yumuşak dokular, plevral/akciğer izlenen alanları.\n\nSONUÇ:\nKord basısı, kırık, enfeksiyon veya metastaz şüphesini öncelikle yaz.\n\nÖNERİ:\nKlinik/laboratuvar korelasyon, kontrastlı MR veya takip öner."
+  },
+  {
+    "key": "ready-mr-shoulder",
+    "modality": "MR",
+    "title": "MR Omuz",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMR Omuz\n\nTEKNİK:\nOmuz eklemi multiplanar multisekans MRG ile değerlendirildi.\n\nKLİNİK BİLGİ:\nAğrı, travma, instabilite, impingement, operasyon veya rotator manşet şüphesi varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki MR/US varsa tendon, labrum ve eklem bulgularındaki değişimi belirt.\n\nBULGULAR:\n- Rotator manşet tendonları: supraspinatus, infraspinatus, subskapularis, teres minor.\n- Biseps uzun baş tendonu, labrum, glenohumeral eklem ve eklem sıvısı.\n- Akromioklaviküler eklem, subakromial-subdeltoid bursa ve impingement bulguları.\n- Kemik iliği ödemi, kırık, kıkırdak yüzeyler ve çevre kas/yumuşak dokular.\n\nSONUÇ:\nTendon yırtığı, labral patoloji veya impingement bulgularını özetle.\n\nÖNERİ:\nOrtopedi/fizik tedavi korelasyonu veya artrografi/takip öner."
+  },
+  {
+    "key": "ready-mr-hip",
+    "modality": "MR",
+    "title": "MR Kalça",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMR Kalça\n\nTEKNİK:\nKalça eklemi ve çevre yumuşak dokular multiplanar multisekans MRG ile değerlendirildi.\n\nKLİNİK BİLGİ:\nAğrı, travma, avasküler nekroz, impingement, enfeksiyon veya operasyon öyküsü varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki MR/BT/grafi varsa kemik iliği, eklem ve yumuşak doku değişimini belirt.\n\nBULGULAR:\n- Femur başı-boynu, asetabulum, kemik iliği sinyali ve avasküler nekroz bulguları.\n- Eklem sıvısı, sinovit, kıkırdak yüzeyler ve labrum.\n- Tendonlar, bursalar, kas planları ve çevre yumuşak dokular.\n- Pelvik kemikler ve sakroiliak eklemlerin izlenen kısımları.\n\nSONUÇ:\nAVN, kırık, labral/kıkırdak patoloji veya yumuşak doku bulgularını özetle.\n\nÖNERİ:\nOrtopedi korelasyonu, BT/artrografi veya takip öner."
+  },
+  {
+    "key": "ready-mr-pelvis-female",
+    "modality": "MR",
+    "title": "MR Kadın Pelvis",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMR Pelvis\n\nTEKNİK:\nKadın pelvis multiplanar multisekans MRG ile değerlendirildi. Kontrast/difüzyon kullanımı transkriptte varsa belirt.\n\nKLİNİK BİLGİ:\nMiyom, endometriozis, adneksiyel kitle, malignite evreleme/takip veya pelvik ağrı nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki US/MR/BT varsa lezyon boyutu ve yayılım değişimini belirt.\n\nBULGULAR:\n- Uterus boyutu, zonal anatomi, endometrium, serviks ve miyometrial lezyonlar.\n- Overler/adneksler: kist, solid komponent, yağ/kan ürünü, difüzyon ve kontrastlanma.\n- Vajen, parametrial alanlar, pelvik periton, mesane ve rektum.\n- Lenf nodları, serbest sıvı, kemik yapılar ve pelvik duvar.\n\nSONUÇ:\nKitle, endometriozis veya evreleme bulgularını klinik öncelikle yaz.\n\nÖNERİ:\nJinekoloji korelasyonu, takip US/MR veya histopatolojik korelasyon öner."
+  },
+  {
+    "key": "ready-mr-prostate",
+    "modality": "MR",
+    "title": "MR Prostat",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMultiparametrik MR Prostat\n\nTEKNİK:\nProstat bezi T2, difüzyon/ADC ve dinamik kontrastlı sekanslarla değerlendirildi. Kontrast kullanılmadıysa belirt.\n\nKLİNİK BİLGİ:\nPSA, biyopsi öyküsü, aktif izlem, evreleme veya tedavi sonrası takip bilgisi varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki MR/biyopsi varsa lezyon ve prostat hacmi değişimini belirt.\n\nBULGULAR:\n- Prostat hacmi, periferik zon, transizyonel zon ve santral zon.\n- Şüpheli lezyon: lokalizasyon, boyut, T2, DWI/ADC, kontrastlanma ve PI-RADS kategorisi.\n- Ekstraprostatik yayılım, seminal vezikül invazyonu, nörovasküler demet, mesane tabanı.\n- Pelvik lenf nodları, kemik yapılar ve serbest sıvı.\n\nSONUÇ:\nPI-RADS kategorisi ve klinik açıdan anlamlı lezyonları özetle.\n\nÖNERİ:\nÜroloji korelasyonu, hedef biyopsi veya takip öner."
+  },
+  {
+    "key": "ready-mr-mrcp",
+    "modality": "MR",
+    "title": "MRCP",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMRCP\n\nTEKNİK:\nPankreatobiliyer sistem ağır T2 ağırlıklı MRCP sekansları ve abdomen MRG sekansları ile değerlendirildi. Kontrast kullanımı varsa yaz.\n\nKLİNİK BİLGİ:\nSarılık, kolestaz, safra yolu dilatasyonu, taş, pankreatit veya operasyon öyküsü varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki US/BT/MRCP varsa kanal çapı, taş ve lezyon değişimini belirt.\n\nBULGULAR:\n- İntrahepatik safra yolları, sağ/sol hepatik kanal, ana hepatik kanal ve koledok çapı.\n- Koledokta taş, darlık, dolum defekti veya kitle basısı.\n- Safra kesesi, sistik kanal, pankreatik kanal ve pankreas parankimi.\n- Karaciğer, dalak, adrenal bezler, böbrekler ve retroperitoneal alan.\n\nSONUÇ:\nObstrüksiyon seviyesi/nedeni, taş veya darlık varsa net yaz.\n\nÖNERİ:\nERCP, EUS, kontrastlı MR/BT veya klinik/laboratuvar korelasyon öner."
+  },
+  {
+    "key": "ready-mr-breast",
+    "modality": "MR",
+    "title": "MR Meme",
+    "source": "Hazır",
+    "content": "İNCELEME:\nBilateral Meme MRG\n\nTEKNİK:\nHer iki meme dinamik kontrastlı MRG ve ilgili sekanslarla değerlendirildi. Kontrast kullanılmadıysa belirt.\n\nKLİNİK BİLGİ:\nTarama, yüksek risk, implant, malignite evreleme, tedavi yanıtı veya problem çözücü inceleme nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki MG/US/MR varsa lezyon boyutu, kontrastlanma ve BI-RADS değişimini belirt.\n\nBULGULAR:\n- Meme parankim paterni ve arka plan kontrastlanması.\n- Sağ ve sol meme: kitle, non-mass kontrastlanma, odak, morfoloji ve kinetik özellikler.\n- Cilt, meme başı, pektoral kas/göğüs duvarı ve implant varsa bütünlük.\n- Aksiller/internal mammarian lenf nodları.\n\nSONUÇ:\nBI-RADS kategorisi ve gerekçesini yaz.\n\nÖNERİ:\nHedef US, mamografi, biyopsi, takip MR veya rutin tarama öner."
+  },
+  {
+    "key": "ready-xr-abdomen",
+    "modality": "XR",
+    "title": "Direkt Batın Grafisi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nDirekt Batın Grafisi\n\nTEKNİK:\nAbdomen uygun projeksiyonda direkt grafi ile değerlendirildi. Ayakta/yatarak ve diyafram dahil olup olmadığını transkripte göre yaz.\n\nKLİNİK BİLGİ:\nKarın ağrısı, obstrüksiyon, perforasyon, taş veya postoperatif kontrol nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki grafi/BT varsa gaz paterni, serbest hava ve taş bulgularını karşılaştır.\n\nBULGULAR:\n- Barsak gaz dağılımı, dilatasyon, hava-sıvı seviyeleri ve fekal yük.\n- Serbest intraperitoneal hava, patolojik kalsifikasyon/taş, organomegali şüphesi.\n- Kemik yapılar, cerrahi materyal, stent/kateter/protez varsa pozisyon.\n\nSONUÇ:\nObstrüksiyon, perforasyon veya önemli grafi bulgularını özetle.\n\nÖNERİ:\nKlinik gereklilikte BT, US veya takip grafi öner."
+  },
+  {
+    "key": "ready-xr-spine",
+    "modality": "XR",
+    "title": "Vertebra Grafisi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nVertebra Grafisi\n\nTEKNİK:\nİlgili vertebral segment uygun projeksiyonlarda değerlendirildi. Segment ve projeksiyonları transkripte göre yaz.\n\nKLİNİK BİLGİ:\nAğrı, travma, skolyoz, operasyon veya deformite değerlendirmesi varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki grafi/BT/MR varsa dizilim ve yükseklik değişimini belirt.\n\nBULGULAR:\n- Aks, lordoz/kifoz/skolyoz, korpus yükseklikleri ve dizilim.\n- Kırık/kompresyon, spondilolistezis, dejeneratif disk/faset değişiklikleri.\n- İmplant varsa pozisyon ve komplikasyon bulguları.\n\nSONUÇ:\nKırık, deformite veya belirgin dejeneratif bulguları seviye ile yaz.\n\nÖNERİ:\nKlinik şüpheye göre BT/MR veya takip grafi öner."
+  },
+  {
+    "key": "ready-xr-pelvis-hip",
+    "modality": "XR",
+    "title": "Pelvis/Kalça Grafisi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nPelvis/Kalça Grafisi\n\nTEKNİK:\nPelvis ve/veya kalça uygun projeksiyonlarda değerlendirildi.\n\nKLİNİK BİLGİ:\nTravma, ağrı, artroz, protez kontrolü veya gelişimsel kalça displazisi bilgisi varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki grafi varsa eklem aralığı, kırık ve implant pozisyonu değişimini belirt.\n\nBULGULAR:\n- Pelvik halka, asetabulum, femur baş-boyun ve sakroiliak eklemler.\n- Kırık/çıkık, eklem aralığı daralması, osteofit, skleroz ve AVN şüphesi.\n- Protez/implant varsa pozisyon, gevşeme veya komplikasyon.\n\nSONUÇ:\nAkut osseöz patoloji veya dejeneratif/protez bulgularını özetle.\n\nÖNERİ:\nKlinik şüphe sürerse BT/MR veya ortopedi korelasyonu öner."
+  },
+  {
+    "key": "ready-xr-joint",
+    "modality": "XR",
+    "title": "Eklem Grafisi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nEklem Grafisi\n\nTEKNİK:\nİlgili eklem en az iki yönlü direkt grafilerle değerlendirildi. Bölgeyi transkripte göre yaz.\n\nKLİNİK BİLGİ:\nTravma, ağrı, şişlik, romatolojik hastalık, protez veya postoperatif kontrol nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki grafi varsa kırık, eklem aralığı ve implant değişimini belirt.\n\nBULGULAR:\n- Eklem dizilimi, eklem aralığı, subluksasyon/luksasyon.\n- Kırık, osteofit, skleroz, erozyon, kist, kondrokalsinozis veya yumuşak doku kalsifikasyonu.\n- İmplant/protez varsa pozisyon ve gevşeme bulguları.\n\nSONUÇ:\nAkut veya kronik önemli eklem bulgularını anatomik lokalizasyonla yaz.\n\nÖNERİ:\nKlinik gereklilikte MR/BT, romatoloji/ortopedi korelasyonu veya takip öner."
+  },
+  {
+    "key": "ready-us-breast",
+    "modality": "US",
+    "title": "Meme US",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMeme Ultrasonografi\n\nTEKNİK:\nİlgili meme/memeler ve aksiller alan yüksek frekanslı lineer prob ile değerlendirildi.\n\nKLİNİK BİLGİ:\nEle gelen kitle, ağrı, akıntı, mamografi bulgusu, tarama veya takip nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki US/MG/MR varsa lezyon boyutu ve BI-RADS değişimini belirt.\n\nBULGULAR:\n- Sağ/sol meme ayrı değerlendir; kitle/kist lokalizasyonu saat kadranı ve mesafeyle yaz.\n- Lezyon boyutu, şekil, kenar, ekojenite, posterior akustik özellik ve vaskülarite.\n- Duktal değişiklikler, cilt/subkutan doku ve aksiller lenf nodları.\n\nSONUÇ:\nBI-RADS kategorisi ve gerekçesini belirt.\n\nÖNERİ:\nTakip US, mamografi/MR, biyopsi veya rutin tarama öner."
+  },
+  {
+    "key": "ready-us-renal",
+    "modality": "US",
+    "title": "Üriner Sistem US",
+    "source": "Hazır",
+    "content": "İNCELEME:\nÜriner Sistem Ultrasonografi\n\nTEKNİK:\nHer iki böbrek, mesane ve gerekiyorsa prostat ultrasonografik olarak değerlendirildi.\n\nKLİNİK BİLGİ:\nYan ağrısı, hematüri, enfeksiyon, taş, hidronefroz veya böbrek fonksiyon bozukluğu varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki US/BT varsa taş, kist, hidronefroz ve organ boyut değişimini belirt.\n\nBULGULAR:\n- Sağ ve sol böbrek boyutu, parankim kalınlığı/ekojenitesi, kist/kitle, taş ve hidronefroz.\n- Üreter dilatasyonu izleniyorsa belirt.\n- Mesane duvarı, lümen içeriği, rezidü idrar ve prostat/uterus-overler transkripte göre.\n\nSONUÇ:\nTaş, hidronefroz veya kitle bulgularını taraf ve boyutla yaz.\n\nÖNERİ:\nKlinik/laboratuvar korelasyon, BT ürografi, takip US veya üroloji değerlendirmesi öner."
+  },
+  {
+    "key": "ready-us-pelvis",
+    "modality": "US",
+    "title": "Pelvik US",
+    "source": "Hazır",
+    "content": "İNCELEME:\nPelvik Ultrasonografi\n\nTEKNİK:\nPelvis transabdominal ve/veya transvajinal ultrasonografi ile değerlendirildi. Yöntemi transkripte göre yaz.\n\nKLİNİK BİLGİ:\nPelvik ağrı, kanama, gebelik şüphesi, kist, miyom veya kontrol nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki US/MR varsa uterus, endometrium ve adneksiyel lezyon değişimini belirt.\n\nBULGULAR:\n- Uterus boyutu, miyometrium, miyom/adenomyozis bulguları.\n- Endometrium kalınlığı ve kavite içeriği.\n- Sağ/sol over boyutları, folikül/kist/solid lezyon ve Doppler bulguları varsa belirt.\n- Douglas boşluğu, serbest sıvı ve adneksiyel alanlar.\n\nSONUÇ:\nKlinik açıdan anlamlı jinekolojik bulguları özetle.\n\nÖNERİ:\nJinekoloji korelasyonu, takip US, MR veya laboratuvar korelasyon öner."
+  },
+  {
+    "key": "ready-us-scrotal",
+    "modality": "US",
+    "title": "Skrotal US",
+    "source": "Hazır",
+    "content": "İNCELEME:\nSkrotal Ultrasonografi\n\nTEKNİK:\nHer iki testis, epididim ve skrotal içerik gri skala ve gerektiğinde Doppler US ile değerlendirildi.\n\nKLİNİK BİLGİ:\nAğrı, şişlik, travma, kitle, enfeksiyon veya torsiyon şüphesi varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki US varsa lezyon boyutu ve vaskülarite değişimini belirt.\n\nBULGULAR:\n- Sağ/sol testis boyutu, parankim ekojenitesi, kitle, mikrolitiazis ve vaskülarite.\n- Epididim, hidrosel, varikosel, skrotal duvar ve inguinal kanal.\n- Torsiyon, inflamasyon veya travmatik değişiklik bulguları varsa ayrıntılandır.\n\nSONUÇ:\nKitle, torsiyon, epididimoorşit, hidrosel/varikosel gibi bulguları özetle.\n\nÖNERİ:\nÜroloji korelasyonu, takip US veya acil klinik değerlendirme öner."
+  },
+  {
+    "key": "ready-us-soft-tissue",
+    "modality": "US",
+    "title": "Yumuşak Doku US",
+    "source": "Hazır",
+    "content": "İNCELEME:\nYumuşak Doku Ultrasonografi\n\nTEKNİK:\nBelirtilen bölge yüksek frekanslı lineer prob ile değerlendirildi. Bölgeyi transkripte göre yaz.\n\nKLİNİK BİLGİ:\nŞişlik, ağrı, kitle, enfeksiyon, travma veya postoperatif kontrol nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki US/MR/BT varsa lezyon boyutu ve iç yapısını karşılaştır.\n\nBULGULAR:\n- Cilt, subkutan yağ doku, kas planları ve fasyal yapılar.\n- Lezyon varsa boyut, derinlik, solid/kistik yapı, kenar, ekojenite ve vaskülarite.\n- Koleksiyon, apse, hematom, yabancı cisim veya herniasyon bulguları.\n\nSONUÇ:\nLezyon/koleksiyon varsa boyut ve karakteriyle özetle.\n\nÖNERİ:\nKlinik korelasyon, takip US, MR veya aspirasyon/biyopsi öner."
+  },
+  {
+    "key": "ready-us-carotid-doppler",
+    "modality": "US",
+    "title": "Karotis-Vertebral Doppler US",
+    "source": "Hazır",
+    "content": "İNCELEME:\nKarotis-Vertebral Doppler Ultrasonografi\n\nTEKNİK:\nHer iki karotis ve vertebral arter gri skala, renkli ve spektral Doppler ile değerlendirildi.\n\nKLİNİK BİLGİ:\nİnme/TIA, baş dönmesi, üfürüm, stenoz takibi veya risk faktörleri varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki Doppler/BT anjiyografi varsa stenoz derecesi değişimini belirt.\n\nBULGULAR:\n- Ana, internal ve eksternal karotis arterlerde plak, darlık ve akım hızları.\n- Vertebral arter akım yönü ve paterni.\n- Stenoz derecesi hız kriterleri ve morfolojiyle uyumlu yaz.\n\nSONUÇ:\nHemodinamik anlamlı stenoz/oklüzyon varsa taraf ve derece ile belirt.\n\nÖNERİ:\nKlinik gereklilikte BT/MR anjiyografi, vasküler cerrahi veya takip Doppler öner."
+  },
+  {
+    "key": "ready-us-venous-doppler",
+    "modality": "US",
+    "title": "Alt Ekstremite Venöz Doppler US",
+    "source": "Hazır",
+    "content": "İNCELEME:\nAlt Ekstremite Venöz Doppler Ultrasonografi\n\nTEKNİK:\nİlgili ekstremite derin ve yüzeyel venöz sistemi kompresyon ve renkli/spektral Doppler ile değerlendirildi.\n\nKLİNİK BİLGİ:\nŞişlik, ağrı, DVT şüphesi, emboli, operasyon veya takip nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki Doppler varsa trombüs yayılımı ve rekanalizasyon değişimini belirt.\n\nBULGULAR:\n- Ana femoral, derin femoral, femoral, popliteal ve krural venler.\n- Kompresibilite, lümen içi trombüs, renk dolumu ve akım paterni.\n- Safen sistem, perforanlar, reflü veya yüzeyel tromboflebit varsa belirt.\n\nSONUÇ:\nDVT varsa akut/kronik özellik, taraf ve seviye ile yaz; yoksa DVT lehine bulgu izlenmediğini belirt.\n\nÖNERİ:\nKlinik gereklilikte takip Doppler veya tedavi yanıt değerlendirmesi öner."
+  },
+  {
+    "key": "ready-mg-diagnostic",
+    "modality": "MG",
+    "title": "Tanısal Mamografi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nTanısal Mamografi\n\nTEKNİK:\nStandart mamografi projeksiyonları ve gerektiğinde ek spot/magnifikasyon/tomosentez görüntüleri değerlendirildi.\n\nKLİNİK BİLGİ:\nEle gelen kitle, fokal ağrı, akıntı, önceki BI-RADS bulgusu veya operasyon öyküsü varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki MG/US/MR varsa kitle, asimetri, kalsifikasyon ve distorsiyon değişimini belirt.\n\nBULGULAR:\n- Meme densitesi.\n- Sağ ve sol memede kitle, fokal asimetri, yapısal distorsiyon ve kalsifikasyonlar.\n- Ek görüntülerde lezyon persistansı, morfoloji ve dağılım.\n- Aksiller alan, cilt, meme başı ve postoperatif değişiklikler.\n\nSONUÇ:\nBI-RADS kategorisi ve gerekçesini yaz.\n\nÖNERİ:\nHedef US, stereotaktik/US eşliğinde biyopsi, MR veya takip öner."
+  },
+  {
+    "key": "ready-mg-tomosynthesis",
+    "modality": "MG",
+    "title": "Tomosentez Mamografi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nDijital Meme Tomosentezi\n\nTEKNİK:\nHer iki meme tomosentez ve/veya sentetik 2D görüntülerle değerlendirildi. Ek projeksiyon varsa belirt.\n\nKLİNİK BİLGİ:\nTarama, yoğun meme, asimetri, kitle veya problem çözücü inceleme nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki mamografi/tomosentez varsa bulgu değişimini belirt.\n\nBULGULAR:\n- Meme parankim densitesi.\n- Kitle, asimetri, distorsiyon ve kalsifikasyonların tomosentezde görünümü.\n- Sağ/sol meme, kadran/saat lokalizasyonu ve derinlik bilgisi.\n- Aksiller alan, cilt ve meme başı.\n\nSONUÇ:\nBI-RADS kategorisiyle birlikte şüpheli bulguları özetle.\n\nÖNERİ:\nHedef US, magnifikasyon, biyopsi veya rutin tarama öner."
+  },
+  {
+    "key": "ready-nm-thyroid",
+    "modality": "NM",
+    "title": "Tiroid Sintigrafisi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nTiroid Sintigrafisi\n\nTEKNİK:\nRadyofarmasötik uygulaması sonrası tiroid planar görüntüleri elde edildi. Uptake ölçümü varsa belirt.\n\nKLİNİK BİLGİ:\nHipertiroidi, nodül, toksik adenom, Graves, tiroidit veya tedavi planlama nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki sintigrafi/US varsa nodül aktivitesi ve bez tutulum değişimini belirt.\n\nBULGULAR:\n- Tiroid bezinin boyutu, lokalizasyonu ve radyofarmasötik dağılımı.\n- Hipoaktif/hiperaktif nodül, diffüz artmış/azalmış tutulum ve ektopik doku.\n- Uptake değeri varsa normal aralıkla yorumla.\n\nSONUÇ:\nSintigrafik patern ve nodül aktivitesini özetle.\n\nÖNERİ:\nUS, laboratuvar korelasyonu, endokrinoloji veya tedavi planlama öner."
+  },
+  {
+    "key": "ready-nm-renal",
+    "modality": "NM",
+    "title": "Dinamik Böbrek Sintigrafisi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nDinamik Böbrek Sintigrafisi\n\nTEKNİK:\nRadyofarmasötik uygulaması sonrası perfüzyon, fonksiyon ve ekskresyon fazları değerlendirildi. Diüretik/ACE inhibitör protokolü varsa yaz.\n\nKLİNİK BİLGİ:\nObstrüksiyon, hidronefroz, renovasküler hipertansiyon, donör değerlendirme veya operasyon sonrası takip nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki sintigrafi/US/BT varsa diferansiyel fonksiyon ve drenaj değişimini belirt.\n\nBULGULAR:\n- Sağ ve sol böbreğin perfüzyonu, kortikal tutulumu ve ekskresyonu.\n- Diferansiyel renal fonksiyon yüzdeleri.\n- Toplayıcı sistem drenajı, diüretik yanıt ve retansiyon bulguları.\n\nSONUÇ:\nFonksiyon dağılımı ve obstrüksiyon lehine bulguları özetle.\n\nÖNERİ:\nÜroloji/nefroloji korelasyonu veya takip sintigrafi/US öner."
+  },
+  {
+    "key": "ready-nm-myocardial-perfusion",
+    "modality": "NM",
+    "title": "Miyokard Perfüzyon Sintigrafisi",
+    "source": "Hazır",
+    "content": "İNCELEME:\nMiyokard Perfüzyon Sintigrafisi\n\nTEKNİK:\nStres ve/veya istirahat fazında radyofarmasötik uygulaması sonrası gated SPECT görüntüler değerlendirildi. Stres yöntemi varsa yaz.\n\nKLİNİK BİLGİ:\nKoroner arter hastalığı şüphesi, göğüs ağrısı, efor testi, revaskülarizasyon veya takip nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki perfüzyon sintigrafisi/anjiyografi varsa iskemi ve skar değişimini belirt.\n\nBULGULAR:\n- Stres ve istirahat perfüzyon dağılımı, reversibl/kalıcı defektler.\n- Sol ventrikül duvar hareketleri, ejeksiyon fraksiyonu ve hacimler varsa yaz.\n- Artefakt, attenuasyon veya teknik kısıtlılık varsa belirt.\n\nSONUÇ:\nİskemi, skar veya normal perfüzyon bulgusunu klinik önemle özetle.\n\nÖNERİ:\nKardiyoloji korelasyonu, koroner BT anjiyografi/anjiyografi veya medikal takip öner."
+  },
+  {
+    "key": "ready-nm-pet-ct",
+    "modality": "NM",
+    "title": "PET/BT",
+    "source": "Hazır",
+    "content": "İNCELEME:\nFDG PET/BT\n\nTEKNİK:\nRadyofarmasötik uygulaması sonrası tüm vücut PET görüntüleri ve düşük doz/diagnostik BT kesitleri değerlendirildi. Kan glukozu, doz ve bekleme süresi varsa yaz.\n\nKLİNİK BİLGİ:\nMalignite tanı/evreleme, tedavi yanıtı, nüks şüphesi, enfeksiyon/inflamasyon veya takip nedeni varsa yaz.\n\nKARŞILAŞTIRMA:\nÖnceki PET/BT, BT veya MR varsa metabolik aktivite ve boyut değişimini belirt.\n\nBULGULAR:\n- Baş-boyun, toraks, abdomen, pelvis ve iskelet sistemi sistematik değerlendirilir.\n- Patolojik FDG tutulumu: lokalizasyon, SUVmax, boyut ve BT karşılığı.\n- Fizyolojik tutulumlar, tedavi ilişkili değişiklikler ve nonspesifik bulgular.\n\nSONUÇ:\nMetabolik aktif hastalık, yanıt, progresyon veya nüks bulgularını önceliklendir.\n\nÖNERİ:\nKlinik korelasyon, histopatolojik doğrulama, takip PET/BT veya hedef görüntüleme öner."
+  }
+]

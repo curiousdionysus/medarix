@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Medarix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/app.css" />
+  </head>
+  <body>
+    <section id="loginView" class="login-view">
+      <div class="login-panel">
+        <div class="login-hero">
+          <div class="brand login-brand">
+            <span class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14h-2v-4H6v-2h4V7h2v4h4v2h-4v4z"/></svg>
+            </span>
+            <div>
+              <strong>Medarix</strong>
+              <small>PACS · Dikte · Yapay Zeka Destekli Raporlama</small>
+            </div>
+          </div>
+          <ul class="login-features">
+            <li>İş listesi ve hasta filtreleme</li>
+            <li>Dikte, transkripsiyon ve AI rapor düzenleme</li>
+            <li>PACS gönderimi ve denetim kaydı</li>
+          </ul>
+        </div>
+        <div class="login-form">
+          <h1>Kurumsal Giriş</h1>
+          <p class="muted">Hastane LDAP hesabınız veya yerel yönetici bilgilerinizle oturum açın.</p>
+          <p class="muted login-brand-meaning">
+            Medarix, yapay zekâ destekli radyoloji raporlama platformudur. Tıbbi görüntüleri yapılandırılmış klinik
+            raporlara dönüştürmek için geliştirilmiştir.
+          </p>
+          <label class="field-label">Kullanıcı adı <input id="username" autocomplete="username" /></label>
+          <label class="field-label">Şifre <input id="password" type="password" autocomplete="current-password" /></label>
+          <button id="loginBtn" class="btn-primary btn-block">Oturum Aç</button>
+          <p id="loginStatus" class="login-status muted">Oturum açılmadı</p>
+        </div>
+      </div>
+    </section>
+
+    <main id="appShell" class="shell hidden">
+      <aside class="sidebar">
+        <section class="sidebar-brand">
+          <span class="brand-mark brand-mark-sm" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14h-2v-4H6v-2h4V7h2v4h4v2h-4v4z"/></svg>
+          </span>
+          <div>
+            <strong>Medarix</strong>
+            <small>Worklist</small>
+          </div>
+        </section>
+
+        <section class="sidebar-user">
+          <button id="userProfileButton" class="user-profile-button" type="button" aria-haspopup="menu" aria-expanded="false">
+            <div id="userAvatar" class="user-avatar">AD</div>
+            <div class="user-profile-copy">
+              <strong id="userDisplayName">Kullanıcı</strong>
+              <span id="userRoleHint" class="user-role-hint">Radyolog</span>
+            </div>
+          </button>
+          <div id="userProfileMenu" class="user-menu hidden" role="menu">
+            <button id="userSettingsMenuBtn" type="button" role="menuitem">Kullanıcı Ayarları</button>
+            <button id="logoutMenuBtn" type="button" role="menuitem">Çıkış</button>
+          </div>
+        </section>
+
+        <section class="worklist-search-card">
+          <button id="toggleFiltersBtn" class="worklist-search-head" type="button" aria-expanded="true" aria-controls="worklistFilters">
+            <h2 id="worklistFilterTitle">İş Listesi</h2>
+            <span class="worklist-chevron" aria-hidden="true">▾</span>
+          </button>
+
+          <div id="worklistFilters" class="worklist-filters">
+            <div class="filter-compact-grid">
+              <input id="patientTc" class="filter-input filter-span-2" placeholder="TC Kimlik No" inputmode="numeric" maxlength="11" aria-label="Hasta TC" />
+              <input id="firstName" class="filter-input" placeholder="Ad" aria-label="İsim" />
+              <input id="lastName" class="filter-input" placeholder="Soyad" aria-label="Soyisim" />
+              <input id="accession" class="filter-input filter-span-2" placeholder="Accession No" aria-label="Accession numarası" />
+              <input id="fromDate" class="filter-input filter-date" type="date" aria-label="Başlangıç tarihi" />
+              <input id="toDate" class="filter-input filter-date" type="date" aria-label="Bitiş tarihi" />
+            </div>
+
+            <fieldset class="modality-grid modality-grid-compact" aria-label="Modalite">
+              <label><input type="checkbox" name="modality" value="CT" /><span class="mod-CT">CT</span></label>
+              <label><input type="checkbox" name="modality" value="MR" /><span class="mod-MR">MR</span></label>
+              <label><input type="checkbox" name="modality" value="XR" /><span class="mod-XR">XR</span></label>
+              <label><input type="checkbox" name="modality" value="US" /><span class="mod-US">US</span></label>
+              <label><input type="checkbox" name="modality" value="MG" /><span class="mod-MG">MG</span></label>
+              <label><input type="checkbox" name="modality" value="NM" /><span class="mod-NM">NM</span></label>
+            </fieldset>
+
+            <div class="search-actions search-actions-compact">
+              <button id="searchBtn" class="btn-primary btn-search" type="button">Sorgula</button>
+              <button id="clearSearchBtn" class="btn-text" type="button">Temizle</button>
+              <button id="todayBtn" class="btn-text" type="button">Bugün</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel worklist sidebar-worklist">
+          <header class="worklist-header worklist-header-compact">
+            <h2>Hasta / İnceleme</h2>
+            <span id="studyCount" class="count-chip">0 inceleme</span>
+          </header>
+          <div id="studyList" class="study-list empty">
+            <div class="empty-state">
+              <div class="empty-state-icon" aria-hidden="true">📋</div>
+              <strong>İnceleme bekleniyor</strong>
+              <p>Giriş yaptıktan sonra filtreleri kullanarak worklist sorgulayın.</p>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="workstation">
+        <header class="app-bar">
+          <div class="app-bar-leading">
+            <div class="app-bar-title">
+              <h1>Medarix</h1>
+              <p>PACS entegrasyonlu dikte ve raporlama</p>
+            </div>
+            <div id="clinicalContextBar" class="clinical-context hidden" aria-live="polite">
+              <span class="clinical-context-label">Aktif vaka</span>
+              <strong id="contextPatientName">—</strong>
+              <span id="contextAccession" class="context-chip"></span>
+              <span id="contextModality" class="context-chip modality-chip"></span>
+              <span id="contextReportStatus" class="status-chip status-draft">Taslak</span>
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <button id="archiveBtn" class="ghost toolbar-btn" title="Ses ve rapor arşivi">
+              <span class="toolbar-icon" aria-hidden="true">🗂</span>
+              <span class="toolbar-label">Arşiv</span>
+            </button>
+            <button id="templatesBtn" class="ghost toolbar-btn" title="Rapor taslakları">
+              <span class="toolbar-icon" aria-hidden="true">📄</span>
+              <span class="toolbar-label">Taslaklar</span>
+            </button>
+            <button id="systemSettingsBtn" class="ghost toolbar-btn hidden" title="Sistem ayarları">
+              <span class="toolbar-icon" aria-hidden="true">⚙</span>
+              <span class="toolbar-label">Sistem</span>
+            </button>
+            <button id="shortcutsBtn" class="ghost icon-btn" title="Klavye kısayolları">?</button>
+            <label class="language-picker">
+              <select id="languageSelect" aria-label="Dil seç">
+                <option value="tr">TR</option>
+                <option value="en">EN</option>
+              </select>
+            </label>
+            <button id="themeBtn" class="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Açık/koyu tema değiştir">
+              <span class="theme-switch-track" aria-hidden="true">
+                <span class="theme-icon moon">☾</span>
+                <span class="theme-icon sun">☀</span>
+                <span class="theme-switch-thumb"></span>
+              </span>
+            </button>
+          </div>
+        </header>
+
+        <div id="sessionWarning" class="session-warning hidden" role="alert"></div>
+
+        <section class="grid">
+          <article class="panel report">
+            <div class="report-top-chrome">
+              <nav class="report-workflow" aria-label="Raporlama akışı">
+                <ol class="workflow-steps">
+                  <li class="workflow-step" data-step="dictation">
+                    <span class="workflow-badge"><span class="workflow-num">1</span></span>
+                    <span class="workflow-label">Dikte / Transkript</span>
+                  </li>
+                  <li class="workflow-step" data-step="format">
+                    <span class="workflow-badge"><span class="workflow-num">2</span></span>
+                    <span class="workflow-label">AI Düzenleme</span>
+                  </li>
+                  <li class="workflow-step" data-step="report">
+                    <span class="workflow-badge"><span class="workflow-num">3</span></span>
+                    <span class="workflow-label">Yapılandırılmış Rapor</span>
+                  </li>
+                </ol>
+              </nav>
+
+              <section id="patientContextPanel" class="patient-context-panel" aria-live="polite">
+              <div id="patientContextEmpty" class="patient-context-empty">
+                <span class="patient-context-empty-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                </span>
+                <div>
+                  <strong>İnceleme seçilmedi</strong>
+                  <p>Soldaki iş listesinden bir inceleme seçin</p>
+                </div>
+              </div>
+              <div id="patientContextFilled" class="patient-context-filled hidden">
+                <div class="patient-context-leading">
+                  <span id="patientContextAvatar" class="patient-context-avatar" aria-hidden="true">—</span>
+                  <div class="patient-context-identity">
+                    <span class="patient-context-label">Hasta</span>
+                    <strong id="patientContextName">—</strong>
+                    <span id="patientContextTc" class="patient-context-sub hidden"></span>
+                  </div>
+                </div>
+                <div id="patientContextDetails" class="patient-context-details"></div>
+                <div class="patient-context-status">
+                  <span id="patientReportStatus" class="status-chip status-draft">Taslak</span>
+                  <span id="reportState" class="report-state-chip hidden"></span>
+                </div>
+              </div>
+              </section>
+            </div>
+
+            <div class="report-body">
+            <div class="report-editor-split">
+            <section class="editor-section editor-section-dictation" aria-labelledby="dictationSectionTitle">
+              <div class="section-toolbar">
+                <h3 id="dictationSectionTitle" class="section-title">Dikte ve Transkript</h3>
+              </div>
+
+              <div class="template-bar">
+                <span class="template-bar-label">Rapor taslağı</span>
+                <div class="template-controls">
+                  <div id="reportTemplatePicker" class="template-combobox">
+                    <button id="reportTemplatePickerBtn" class="template-picker-button ghost" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="reportTemplateFlyout">
+                      <span id="reportTemplatePickerLabel">Taslak seç...</span>
+                    </button>
+                    <div id="reportTemplateFlyout" class="template-flyout hidden" role="presentation">
+                      <div class="flyout-search">
+                        <input id="reportTemplateSearch" type="search" placeholder="Taslak ara..." aria-label="Taslak ara" autocomplete="off" />
+                      </div>
+                      <nav id="reportTemplateMenu" class="flyout-menu" role="menu" aria-label="Rapor taslakları"></nav>
+                    </div>
+                  </div>
+                  <select id="reportTemplateSelect" class="hidden" aria-label="Rapor taslağı seç">
+                    <option value="">Taslak seç...</option>
+                  </select>
+                  <button id="applyTemplateBtn" type="button" class="ghost template-apply-btn">Uygula</button>
+                </div>
+              </div>
+
+              <div class="recording-controls">
+                <button id="recordAudioBtn" type="button" class="record-button">
+                  <span class="record-dot" aria-hidden="true"></span>
+                  Kaydet
+                </button>
+                <button id="stopAudioBtn" type="button" class="ghost" disabled>Durdur</button>
+                <button id="uploadAudioBtn" type="button" class="ghost">Ses Yükle</button>
+                <input id="audioFileInput" class="hidden" type="file" accept="audio/*" />
+                <canvas id="audioWaveform" class="audio-waveform" width="360" height="38" aria-label="Ses dalga formu"></canvas>
+                <div class="audio-status-area">
+                  <div id="audioFeedback" class="audio-feedback muted" role="status" aria-live="polite">
+                    <span id="audioStatus"></span>
+                    <div id="transcriptionLoader" class="transcription-loader hidden" aria-label="Transkripsiyon işleniyor">
+                      <span class="loader-spinner" aria-hidden="true"></span>
+                      <span class="loader-track" aria-hidden="true"><span></span></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="editor-surface editor-surface-transcript">
+                <div class="editor-surface-head">
+                  <label class="editor-surface-label" for="transcript">Transkript</label>
+                  <span class="editor-surface-hint">Dikte veya manuel giriş</span>
+                </div>
+                <textarea id="transcript" class="editor-field editor-field-transcript" placeholder="Dikte metnini buraya yazın veya mikrofon ile kaydedin…" spellcheck="true"></textarea>
+              </div>
+              <div class="actions">
+                <button id="formatBtn" class="btn-primary btn-ai">
+                  <span>Yapay Zeka ile Yapılandır</span>
+                  <span id="formatLoader" class="format-loader hidden" aria-hidden="true">
+                    <span class="format-spinner"></span>
+                    <span class="format-loader-track"><span></span></span>
+                  </span>
+                </button>
+              </div>
+            </section>
+
+            <section class="editor-section editor-section-report" aria-labelledby="reportSectionTitle">
+              <div class="section-toolbar">
+                <h3 id="reportSectionTitle" class="section-title">Yapılandırılmış Rapor</h3>
+                <div class="report-meta-controls">
+                  <label class="inline-label">Durum
+                    <select id="reportStatusSelect" class="status-select">
+                      <option value="draft">Taslak</option>
+                      <option value="preliminary">Ön Rapor</option>
+                      <option value="signed">İmzalı</option>
+                      <option value="amended">Düzeltme</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div class="editor-surface editor-surface-report">
+                <div class="editor-surface-head">
+                  <label class="editor-surface-label" for="report">Rapor metni</label>
+                  <span class="editor-surface-hint">İNCELEME · BULGULAR · SONUÇ</span>
+                </div>
+                <textarea id="report" placeholder="Yapılandırılmış rapor burada görünecek…" class="report-output editor-field editor-field-report" spellcheck="true"></textarea>
+              </div>
+              <footer class="report-status-bar">
+                <span id="reportWordCount" class="report-metric">0 kelime</span>
+                <span id="reportCharCount" class="report-metric">0 karakter</span>
+                <span id="autoSaveHint" class="report-metric muted">Otomatik taslak kaydı etkin</span>
+              </footer>
+            </section>
+            </div>
+
+            <div class="send-pacs-actions">
+              <button id="downloadPdfBtn" class="ghost" type="button">PDF İndir</button>
+              <button id="sendPacsBtn" class="btn-primary btn-pacs">PACS'a Gönder</button>
+            </div>
+            </div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="settingsDialog" class="settings-dialog settings-dialog-modern">
+      <form method="dialog" class="settings-shell">
+        <header class="settings-header">
+          <div class="settings-header-main">
+            <div class="settings-header-icon" aria-hidden="true">⚙</div>
+            <div>
+              <h2>Sistem Ayarları</h2>
+              <p id="settingsHeaderSubtitle">Hastane kurulumu için merkezi admin yapılandırması.</p>
+            </div>
+          </div>
+          <div class="settings-header-actions">
+            <label class="settings-search">
+              <span class="sr-only">Ayar ara</span>
+              <input id="settingsSearchInput" type="search" placeholder="Ayar ara..." autocomplete="off" />
+            </label>
+            <button id="closeSettingsBtn" class="ghost settings-close-btn" value="cancel" type="submit">Kapat</button>
+          </div>
+        </header>
+        <div id="settingsGroups" class="settings-groups">Ayarlar yükleniyor...</div>
+        <footer class="settings-footer">
+          <div class="settings-footer-status">
+            <span id="settingsStatus" class="settings-status-pill muted">Değişiklikler denetim kaydına yazılır.</span>
+          </div>
+          <div class="settings-footer-actions">
+            <button id="resetSettingsBtn" type="button" class="ghost hidden">Değişiklikleri Geri Al</button>
+            <button id="saveSettingsBtn" type="button">Ayarları Kaydet</button>
+          </div>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog id="auditDialog" class="settings-dialog">
+      <form method="dialog" class="settings-shell">
+        <header>
+          <div>
+            <h2>SOC / Denetim</h2>
+            <p>Klinik işlem izi ve güvenlik izleme olayları.</p>
+          </div>
+          <button class="ghost" value="cancel">Kapat</button>
+        </header>
+        <div class="audit-dialog-body">
+          <pre id="auditLog">Denetim akışı hazır.</pre>
+        </div>
+        <footer>
+          <span id="auditStatus" class="muted">SIEM uyumlu denetim çıktısı.</span>
+          <button id="refreshAuditBtn" value="default">Denetimi Yenile</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog id="templatesDialog" class="settings-dialog">
+      <form method="dialog" class="settings-shell">
+        <header>
+          <div>
+            <h2>Taslaklarım</h2>
+            <p>Modaliteye göre hızlı rapor taslakları oluştur ve Rapor Editörü içinde kullan.</p>
+          </div>
+          <button class="ghost" value="cancel">Kapat</button>
+        </header>
+        <div class="template-dialog-body">
+          <section class="template-form">
+            <select id="templateModality">
+              <option value="CT">CT</option>
+              <option value="MR">MR</option>
+              <option value="XR">XR</option>
+              <option value="US">US</option>
+              <option value="MG">MG</option>
+              <option value="NM">NM</option>
+            </select>
+            <input id="templateTitle" placeholder="Taslak adı" />
+            <textarea id="templateContent" placeholder="Bulgular ve sonuç başlıklarını içeren taslak metni..."></textarea>
+            <button id="saveTemplateBtn" type="button">Taslağı Kaydet</button>
+          </section>
+          <section>
+            <h3>Kayıtlı Taslaklar</h3>
+            <div id="templateList" class="template-list empty">Henüz kişisel taslak yok.</div>
+          </section>
+        </div>
+        <footer>
+          <span id="templatesStatus" class="muted">CT, MR, XR ve US hızlı taslakları dropdown içinde hazır gelir.</span>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog id="userSettingsDialog" class="settings-dialog compact-dialog">
+      <form method="dialog" class="settings-shell">
+        <header>
+          <div>
+            <h2>Kullanıcı Ayarları</h2>
+            <p>Oturum ve kullanıcı profil bilgileri.</p>
+          </div>
+          <button class="ghost" value="cancel">Kapat</button>
+        </header>
+        <div class="user-settings-body">
+          <div class="user-profile large">
+            <div id="userSettingsAvatar" class="user-avatar">VR</div>
+            <div>
+              <strong id="userSettingsName">Kullanıcı</strong>
+              <span id="userSettingsUsername">-</span>
+            </div>
+          </div>
+          <label>Ad Soyad <input id="userSettingsDisplayName" autocomplete="name" maxlength="256" required /></label>
+          <label>E-posta <input id="userSettingsEmail" type="email" autocomplete="email" maxlength="256" placeholder="ornek@hastane.local" /></label>
+          <label>Roller <input id="userSettingsRoles" readonly /></label>
+        </div>
+        <footer>
+          <span id="userSettingsStatus" class="muted">Profil bilgilerini güncelleyebilirsin.</span>
+          <button id="saveUserSettingsBtn" type="button">Kaydet</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog id="archiveDialog" class="settings-dialog">
+      <form method="dialog" class="settings-shell">
+        <header>
+          <div>
+            <h2>Ses ve Rapor Arşivi</h2>
+            <p>Kayıtlı transkripsiyon ve yapılandırılmış raporlar.</p>
+          </div>
+          <button class="ghost" value="cancel">Kapat</button>
+        </header>
+        <div class="archive-dialog-body">
+          <div id="archiveList" class="archive-list empty">Kayıtlar yükleniyor...</div>
+          <audio id="archiveAudioPlayer" controls class="archive-audio hidden"></audio>
+        </div>
+        <footer>
+          <span id="archiveStatus" class="muted">Son kayıtlar listelenir.</span>
+          <button id="refreshArchiveBtn" type="button">Yenile</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog id="diffDialog" class="settings-dialog compact-dialog">
+      <form method="dialog" class="settings-shell">
+        <header>
+          <div>
+            <h2>AI Düzenleme Özeti</h2>
+            <p>Transkript ile yapılandırılmış rapor karşılaştırması.</p>
+          </div>
+          <button class="ghost" value="cancel">Kapat</button>
+        </header>
+        <div class="diff-dialog-body">
+          <section>
+            <h3>Transkript</h3>
+            <pre id="diffTranscript"></pre>
+          </section>
+          <section>
+            <h3>Rapor</h3>
+            <pre id="diffReport"></pre>
+          </section>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="shortcutsDialog" class="settings-dialog compact-dialog">
+      <form method="dialog" class="settings-shell">
+        <header>
+          <div>
+            <h2>Klavye Kısayolları</h2>
+          </div>
+          <button class="ghost" value="cancel">Kapat</button>
+        </header>
+        <div class="shortcuts-dialog-body">
+          <p><kbd>R</kbd> Transkript alanına odaklan</p>
+          <p><kbd>S</kbd> Taslağı kaydet</p>
+          <p><kbd>?</kbd> Kısayollar</p>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

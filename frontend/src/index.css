@@ -1,0 +1,319 @@
+@import "tailwindcss";
+
+/*
+  Medarix design system
+  -------------------------
+  Premium healthcare SaaS tokens. Color channels are stored as HSL triplets so
+  they can be consumed via hsl(var(--token)) and composed with opacity.
+*/
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Surfaces */
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
+  /* Brand: Deep Medical Blue */
+  --primary: 214 90% 38%;
+  --primary-foreground: 210 40% 98%;
+
+  /* Slate gray secondary */
+  --secondary: 215 25% 94%;
+  --secondary-foreground: 222 35% 22%;
+
+  --muted: 215 28% 95%;
+  --muted-foreground: 215 16% 42%;
+
+  /* Teal accent */
+  --accent: 182 70% 40%;
+  --accent-foreground: 0 0% 100%;
+
+  /* Status */
+  --success: 160 72% 34%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 95% 48%;
+  --warning-foreground: 28 80% 14%;
+  --info: 205 85% 45%;
+  --info-foreground: 0 0% 100%;
+  --destructive: 0 72% 48%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 214 25% 88%;
+  --input: 214 25% 86%;
+  --ring: 214 90% 45%;
+
+  /* Sidebar */
+  --sidebar: 222 47% 11%;
+  --sidebar-foreground: 214 32% 82%;
+  --sidebar-muted: 215 20% 60%;
+  --sidebar-border: 217 33% 20%;
+  --sidebar-accent: 214 90% 52%;
+  --sidebar-accent-foreground: 0 0% 100%;
+
+  /* Charts */
+  --chart-1: 214 90% 48%;
+  --chart-2: 182 70% 42%;
+  --chart-3: 160 72% 40%;
+  --chart-4: 38 95% 52%;
+  --chart-5: 268 60% 58%;
+
+  /* Modality accents */
+  --mod-ct: 211 90% 52%;
+  --mod-mr: 280 65% 60%;
+  --mod-xr: 142 60% 42%;
+  --mod-us: 190 80% 42%;
+  --mod-mg: 25 90% 55%;
+  --mod-nm: 0 72% 56%;
+
+  --radius: 0.7rem;
+}
+
+.dark {
+  --background: 222 47% 7%;
+  --foreground: 213 31% 91%;
+  --card: 222 41% 10%;
+  --card-foreground: 213 31% 91%;
+  --popover: 222 44% 9%;
+  --popover-foreground: 213 31% 91%;
+
+  --primary: 211 92% 56%;
+  --primary-foreground: 222 47% 8%;
+
+  --secondary: 217 30% 17%;
+  --secondary-foreground: 213 31% 88%;
+
+  --muted: 217 30% 15%;
+  --muted-foreground: 215 18% 60%;
+
+  --accent: 182 65% 46%;
+  --accent-foreground: 222 47% 8%;
+
+  --success: 160 62% 44%;
+  --success-foreground: 222 47% 8%;
+  --warning: 38 92% 54%;
+  --warning-foreground: 28 80% 12%;
+  --info: 205 85% 56%;
+  --info-foreground: 222 47% 8%;
+  --destructive: 0 72% 56%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 217 30% 20%;
+  --input: 217 30% 22%;
+  --ring: 211 92% 60%;
+
+  --sidebar: 224 50% 5%;
+  --sidebar-foreground: 214 32% 80%;
+  --sidebar-muted: 215 18% 52%;
+  --sidebar-border: 217 33% 16%;
+  --sidebar-accent: 211 92% 56%;
+  --sidebar-accent-foreground: 222 47% 8%;
+
+  --chart-1: 211 92% 60%;
+  --chart-2: 182 65% 52%;
+  --chart-3: 160 62% 50%;
+  --chart-4: 38 92% 58%;
+  --chart-5: 268 70% 68%;
+}
+
+/* High-contrast accessibility mode */
+.contrast-high {
+  --border: 214 40% 60%;
+  --muted-foreground: 215 25% 30%;
+  --ring: 214 90% 40%;
+}
+.dark.contrast-high {
+  --border: 217 35% 42%;
+  --muted-foreground: 215 25% 78%;
+  --foreground: 0 0% 100%;
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-muted: hsl(var(--sidebar-muted));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --color-mod-ct: hsl(var(--mod-ct));
+  --color-mod-mr: hsl(var(--mod-mr));
+  --color-mod-xr: hsl(var(--mod-xr));
+  --color-mod-us: hsl(var(--mod-us));
+  --color-mod-mg: hsl(var(--mod-mg));
+  --color-mod-nm: hsl(var(--mod-nm));
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    margin: 0;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    cursor: default;
+  }
+  /* Prevent text-insertion caret on static UI (headings, labels, cards, etc.) */
+  #root {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-modify: read-only;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  span,
+  label,
+  td,
+  th,
+  li,
+  dt,
+  dd,
+  small,
+  strong,
+  em,
+  blockquote,
+  figcaption,
+  nav,
+  header,
+  footer,
+  aside,
+  section,
+  article {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-modify: read-only;
+    caret-color: transparent;
+    cursor: default;
+  }
+  /* Form fields and explicitly marked copyable regions */
+  .select-text,
+  .allow-select,
+  input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([type="range"]):not([type="color"]):not([type="hidden"]),
+  textarea,
+  select,
+  [contenteditable="true"] {
+    user-select: text;
+    -webkit-user-select: text;
+    -webkit-user-modify: read-only;
+    cursor: text;
+    caret-color: auto;
+  }
+  input[readonly],
+  textarea[readonly] {
+    cursor: default;
+    caret-color: transparent;
+    pointer-events: none;
+    user-select: text;
+  }
+  a,
+  button,
+  [role="button"],
+  label[for],
+  select,
+  summary {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+  ::selection {
+    background-color: hsl(var(--primary) / 0.22);
+  }
+  /* Focus visibility for keyboard users */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+  /* Scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.35) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+}
+
+@layer utilities {
+  .animate-in {
+    animation: enter 0.18s ease-out;
+  }
+  @keyframes enter {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .glass {
+    backdrop-filter: blur(12px) saturate(160%);
+  }
+}
