@@ -1,32 +1,20 @@
 import { Sparkles } from "lucide-react";
+import { useT } from "@/features/i18n/locale-context";
 import { cn } from "@/lib/utils";
 
-interface Props {
-  value: number; // 0..1
-  className?: string;
-  showIcon?: boolean;
-}
-
-/** AI confidence chip used across dictation/report surfaces. */
-export function AiConfidenceChip({ value, className, showIcon = true }: Props) {
-  const pct = Math.round(Math.max(0, Math.min(1, value)) * 100);
-  const tone =
-    pct >= 85
-      ? "text-success bg-success/12 ring-success/25"
-      : pct >= 65
-        ? "text-warning bg-warning/15 ring-warning/25"
-        : "text-destructive bg-destructive/12 ring-destructive/25";
+export function AiConfidenceChip({ value, className }: { value: number; className?: string }) {
+  const t = useT();
+  const pct = Math.round(value * 100);
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset",
-        tone,
+        "inline-flex items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-xs font-semibold text-accent",
         className,
       )}
-      title={`AI güven skoru: %${pct}`}
+      title={t("aiConfidence.title", { pct: String(pct) })}
     >
-      {showIcon && <Sparkles className="size-3" />}
-      AI %{pct}
+      <Sparkles className="size-3" />
+      {t("aiConfidence.label", { pct: String(pct) })}
     </span>
   );
 }

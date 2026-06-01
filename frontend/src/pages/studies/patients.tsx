@@ -2,11 +2,11 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, Search, CalendarClock, FileText, X } from "lucide-react";
 import { usePatients, usePatientTimeline } from "@/features/patients/api";
+import { useT } from "@/features/i18n/locale-context";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -15,6 +15,7 @@ import { formatDate, initials } from "@/lib/utils";
 import type { PatientSummary } from "@/types/api";
 
 export default function PatientsPage() {
+  const t = useT();
   const [term, setTerm] = React.useState("");
   const [query, setQuery] = React.useState("");
   const [selected, setSelected] = React.useState<PatientSummary | null>(null);
@@ -28,16 +29,24 @@ export default function PatientsPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Hastalar"
-        description="Hasta kayıtlarını görüntüleyin ve çalışma geçmişini inceleyin."
+        title={t("patients.title")}
+        description={t("patients.descriptionLong")}
         icon={<Users className="size-5" />}
       />
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Hasta adı ile ara…" className="pl-9" />
+        <Input
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          placeholder={t("patients.searchPlaceholder")}
+          className="pl-9"
+        />
         {term && (
-          <button onClick={() => setTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+          <button
+            onClick={() => setTerm("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
             <X className="size-4" />
           </button>
         )}
@@ -62,8 +71,13 @@ export default function PatientsPage() {
                   <AvatarFallback>{initials(p.patient_name)}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">{p.patient_name || "İsimsiz hasta"}</p>
-                  <p className="text-xs text-muted-foreground">{p.study_count} çalışma · Son: {formatDate(p.last_study_date)}</p>
+                  <p className="truncate font-semibold">{p.patient_name || t("common.unnamedPatient")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("patients.studySummary", {
+                      count: String(p.study_count),
+                      date: formatDate(p.last_study_date),
+                    })}
+                  </p>
                   <div className="mt-2 flex flex-wrap gap-1">
                     {p.modalities.slice(0, 5).map((m) => (
                       <ModalityBadge key={m} modality={m} />
@@ -75,7 +89,11 @@ export default function PatientsPage() {
           ))}
         </div>
       ) : (
-        <EmptyState icon={Users} title="Hasta bulunamadı" description="Arama kriterlerinize uyan hasta yok." />
+        <EmptyState
+          icon={Users}
+          title={t("patients.notFound")}
+          description={t("patients.notFoundDesc")}
+        />
       )}
 
       <PatientTimelineDialog patient={selected} onClose={() => setSelected(null)} />
@@ -84,6 +102,7 @@ export default function PatientsPage() {
 }
 
 function PatientTimelineDialog({ patient, onClose }: { patient: PatientSummary | null; onClose: () => void }) {
+  const t = useT();
   const { data, isLoading } = usePatientTimeline(patient?.id);
   const navigate = useNavigate();
 
@@ -95,7 +114,7 @@ function PatientTimelineDialog({ patient, onClose }: { patient: PatientSummary |
             <Avatar className="size-9">
               <AvatarFallback>{initials(patient?.patient_name)}</AvatarFallback>
             </Avatar>
-            {patient?.patient_name || "İsimsiz hasta"}
+            {patient?.patient_name || t("common.unnamedPatient")}
           </DialogTitle>
         </DialogHeader>
 
@@ -121,7 +140,9 @@ function PatientTimelineDialog({ patient, onClose }: { patient: PatientSummary |
                     <div className="flex items-center justify-between gap-2">
                       <span className="flex items-center gap-2">
                         <ModalityBadge modality={entry.modality} />
-                        <span className="text-sm font-medium">{entry.study_description || "Açıklama yok"}</span>
+                        <span className="text-sm font-medium">
+                          {entry.study_description || t("common.noDescription")}
+                        </span>
                       </span>
                       {entry.report_status && <ReportStatusBadge status={entry.report_status} />}
                     </div>
@@ -134,7 +155,11 @@ function PatientTimelineDialog({ patient, onClose }: { patient: PatientSummary |
               ))}
             </ol>
           ) : (
-            <EmptyState icon={FileText} title="Çalışma yok" description="Bu hasta için kayıtlı çalışma bulunmuyor." />
+            <EmptyState
+              icon={FileText}
+              title={t("patients.noStudies")}
+              description={t("patients.noStudiesDesc")}
+            />
           )}
         </div>
       </DialogContent>

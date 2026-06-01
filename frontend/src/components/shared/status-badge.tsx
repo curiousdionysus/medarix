@@ -1,29 +1,36 @@
 import { Badge } from "@/components/ui/badge";
+import { useT } from "@/features/i18n/locale-context";
 import { cn } from "@/lib/utils";
 import type { ReportStatus, StudyPriority } from "@/types/api";
 
-const REPORT_STATUS: Record<ReportStatus, { label: string; variant: Parameters<typeof Badge>[0]["variant"] }> = {
-  draft: { label: "Taslak", variant: "muted" },
-  preliminary: { label: "Ön Rapor", variant: "warning" },
-  signed: { label: "İmzalı", variant: "success" },
-  amended: { label: "Düzeltme", variant: "info" },
+const REPORT_VARIANT: Record<ReportStatus, Parameters<typeof Badge>[0]["variant"]> = {
+  draft: "muted",
+  preliminary: "warning",
+  signed: "success",
+  amended: "info",
 };
 
 export function ReportStatusBadge({ status }: { status?: ReportStatus | string | null }) {
-  const meta = REPORT_STATUS[(status as ReportStatus) ?? "draft"] ?? REPORT_STATUS.draft;
-  return <Badge variant={meta.variant}>{meta.label}</Badge>;
+  const t = useT();
+  const key = (status as ReportStatus) ?? "draft";
+  const variant = REPORT_VARIANT[key] ?? REPORT_VARIANT.draft;
+  const labelKey = `status.${key}` as const;
+  const label = t(labelKey) !== labelKey ? t(labelKey) : t("status.draft");
+  return <Badge variant={variant}>{label}</Badge>;
 }
 
-const PRIORITY: Record<StudyPriority, { label: string; variant: Parameters<typeof Badge>[0]["variant"] }> = {
-  routine: { label: "Rutin", variant: "muted" },
-  urgent: { label: "Acil", variant: "warning" },
-  stat: { label: "STAT", variant: "destructive" },
+const PRIORITY_VARIANT: Record<StudyPriority, Parameters<typeof Badge>[0]["variant"]> = {
+  routine: "muted",
+  urgent: "warning",
+  stat: "destructive",
 };
 
 export function PriorityBadge({ priority }: { priority?: StudyPriority | null }) {
+  const t = useT();
   if (!priority) return null;
-  const meta = PRIORITY[priority];
-  return <Badge variant={meta.variant}>{meta.label}</Badge>;
+  const labelKey = `status.${priority}`;
+  const label = t(labelKey);
+  return <Badge variant={PRIORITY_VARIANT[priority]}>{label}</Badge>;
 }
 
 const MOD_CLASS: Record<string, string> = {

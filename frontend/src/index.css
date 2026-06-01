@@ -184,8 +184,8 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-sans: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
 @layer base {
@@ -202,8 +202,19 @@
     color: hsl(var(--foreground));
     font-family: var(--font-sans);
     font-weight: 400;
-    letter-spacing: -0.01em;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    letter-spacing: -0.015em;
+    font-feature-settings: "kern" 1, "liga" 1;
     cursor: default;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
   }
   /* Prevent text-insertion caret on static UI (headings, labels, cards, etc.) */
   #root {
@@ -312,6 +323,34 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+  @keyframes sidebar-nav-indicator {
+    from {
+      opacity: 0;
+      transform: scaleY(0.35);
+    }
+    to {
+      opacity: 1;
+      transform: scaleY(1);
+    }
+  }
+  @keyframes sidebar-nav-pill {
+    from {
+      opacity: 0;
+      transform: scaleX(0.92);
+    }
+    to {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+  }
+  .animate-sidebar-nav-indicator {
+    transform-origin: center center;
+    animation: sidebar-nav-indicator 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .animate-sidebar-nav-pill {
+    transform-origin: center center;
+    animation: sidebar-nav-pill 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
   .glass {
     backdrop-filter: blur(12px) saturate(160%);

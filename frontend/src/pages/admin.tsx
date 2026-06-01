@@ -21,6 +21,7 @@ import {
   Copy,
   Trash2,
   List,
+  Palette,
 } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-context";
 import { actionLabel, actionCategory } from "@/features/admin/audit-meta";
@@ -31,6 +32,7 @@ import {
   AI_TRANSCRIPTION_BASE_URL_KEY,
   AI_TRANSCRIPTION_MODEL_KEY,
   AUTH_CATEGORY,
+  BRANDING_CATEGORY,
   CATEGORY_TOGGLE_KEY,
   LDAP_SETTING_KEYS,
   MODULE_TOGGLE_KEYS,
@@ -58,7 +60,17 @@ import {
   useIssueLicense,
 } from "@/features/admin/api";
 import { roleLabel } from "@/config/roles";
+import { useApiError } from "@/features/i18n/helpers";
+import { useLocale, useT } from "@/features/i18n/locale-context";
+import {
+  ldapCheckLabel,
+  ldapVerifyMessage,
+  settingDescription,
+  settingLabel,
+  settingsCategoryLabel,
+} from "@/features/admin/settings-i18n";
 import { RolesTab } from "@/features/admin/roles-tab";
+import { BrandingTab } from "@/features/admin/branding-tab";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,42 +94,44 @@ import { cn, formatDateTime, initials } from "@/lib/utils";
 import type { RoleSlug } from "@/types/api";
 
 const TABS = [
-  { id: "users", label: "Kullanıcılar", icon: Users },
-  { id: "groups", label: "Gruplar", icon: UsersRound },
-  { id: "roles", label: "Roller", icon: Shield },
-  { id: "license", label: "Lisans", icon: BadgeCheck },
-  { id: "audit", label: "Denetim Kayıtları", icon: ScrollText },
-  { id: "settings", label: "Sistem Ayarları", icon: Settings2 },
-  { id: "security", label: "Güvenlik", icon: Lock },
+  { id: "users", labelKey: "admin.users", icon: Users },
+  { id: "groups", labelKey: "admin.groups", icon: UsersRound },
+  { id: "roles", labelKey: "admin.roles", icon: Shield },
+  { id: "license", labelKey: "admin.license", icon: BadgeCheck },
+  { id: "audit", labelKey: "admin.audit", icon: ScrollText },
+  { id: "branding", labelKey: "admin.branding", icon: Palette },
+  { id: "settings", labelKey: "admin.systemSettings", icon: Settings2 },
+  { id: "security", labelKey: "admin.security", icon: Lock },
 ] as const;
 
 export default function AdminPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const t = useT();
   const active = location.pathname.split("/")[2] || "users";
 
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Yönetim"
-        description="Kullanıcılar, roller, denetim kayıtları ve sistem yapılandırması."
+        title={t("admin.title")}
+        description={t("admin.description")}
         icon={<ShieldCheck className="size-5" />}
       />
 
       <div className="flex flex-wrap gap-1 border-b border-border">
-        {TABS.map((t) => (
+        {TABS.map((tab) => (
           <button
-            key={t.id}
-            onClick={() => navigate(`/admin/${t.id}`)}
+            key={tab.id}
+            onClick={() => navigate(`/admin/${tab.id}`)}
             className={cn(
               "flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition-colors",
-              active === t.id
+              active === tab.id
                 ? "border-primary text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
-            <t.icon className="size-4" />
-            {t.label}
+            <tab.icon className="size-4" />
+            {t(tab.labelKey)}
           </button>
         ))}
       </div>
@@ -127,6 +141,7 @@ export default function AdminPage() {
       {active === "roles" && <RolesTab />}
       {active === "license" && <LicenseTab />}
       {active === "audit" && <AuditTab />}
+      {active === "branding" && <BrandingTab />}
       {active === "settings" && <SettingsTab />}
       {active === "security" && <SecurityTab />}
     </div>
@@ -134,6 +149,9 @@ export default function AdminPage() {
 }
 
 function UsersTab() {
+  const t = useT();
+  const apiErr = useApiError();
+  const { locale } = useLocale();
   const { user: currentUser } = useAuth();
   const { data, isLoading } = useAdminUsers();
   const { data: roles } = useAdminRoles();
@@ -144,12 +162,12 @@ function UsersTab() {
 
   const handleDeleteUser = async (u: { id: string; username: string; display_name?: string | null }) => {
     const label = u.display_name || u.username;
-    if (!window.confirm(`"${label}" kullanıcısını kalıcı olarak silmek istediğinize emin misiniz?`)) return;
+    if (!window.confirm(t("admin.deleteUserConfirm", { name: label }))) return;
     try {
       await remove.mutateAsync(u.id);
-      toast.success("Kullanıcı silindi");
+      toast.success(t("admin.userDeleted"));
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Kullanıcı silinemedi"));
+      toast.error(apiErr(err, "admin.userDeleteFail"));
     }
   };
 
@@ -158,54 +176,54 @@ function UsersTab() {
 
   const submit = async () => {
     if (!form.username.trim() || !form.password) {
-      toast.warning("Kullanıcı adı ve parola gerekli");
+      toast.warning(t("admin.usernamePasswordRequired"));
       return;
     }
     try {
       await create.mutateAsync(form);
-      toast.success("Kullanıcı oluşturuldu");
+      toast.success(t("admin.userCreated"));
       setOpen(false);
       setForm({ username: "", password: "", display_name: "", email: "", roles: ["viewer"] });
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Kullanıcı oluşturulamadı"));
+      toast.error(apiErr(err, "admin.userCreateFail"));
     }
   };
 
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle>Kullanıcılar</CardTitle>
+        <CardTitle>{t("admin.users")}</CardTitle>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button size="sm">
-              <Plus /> Yeni Kullanıcı
+              <Plus /> {t("admin.newUser")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Yeni Kullanıcı</DialogTitle>
+              <DialogTitle>{t("admin.newUser")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label>Kullanıcı adı</Label>
+                  <Label>{t("admin.username")}</Label>
                   <Input value={form.username} onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Parola</Label>
+                  <Label>{t("admin.password")}</Label>
                   <Input type="password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label>Ad Soyad</Label>
+                <Label>{t("settings.displayName")}</Label>
                 <Input value={form.display_name} onChange={(e) => setForm((f) => ({ ...f, display_name: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>E-posta</Label>
+                <Label>{t("settings.email")}</Label>
                 <Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>Roller</Label>
+                <Label>{t("admin.roles")}</Label>
                 <div className="flex flex-wrap gap-2">
                   {roles?.map((r) => (
                     <button
@@ -226,8 +244,8 @@ function UsersTab() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>İptal</Button>
-              <Button onClick={submit} disabled={create.isPending}>Oluştur</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>{t("common.cancel")}</Button>
+              <Button onClick={submit} disabled={create.isPending}>{t("admin.create")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -239,10 +257,10 @@ function UsersTab() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Kullanıcı</TableHead>
-                <TableHead>Roller</TableHead>
-                <TableHead>Sağlayıcı</TableHead>
-                <TableHead>Durum</TableHead>
+                <TableHead>{t("admin.userCol")}</TableHead>
+                <TableHead>{t("admin.roles")}</TableHead>
+                <TableHead>{t("admin.provider")}</TableHead>
+                <TableHead>{t("reports.status")}</TableHead>
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
@@ -263,13 +281,13 @@ function UsersTab() {
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {u.roles.map((r) => (
-                        <Badge key={r} variant="secondary">{roleLabel(r)}</Badge>
+                        <Badge key={r} variant="secondary">{roleLabel(r, undefined, locale)}</Badge>
                       ))}
                     </div>
                   </TableCell>
                   <TableCell><Badge variant="muted">{u.auth_provider}</Badge></TableCell>
                   <TableCell>
-                    {u.is_active ? <Badge variant="success">Aktif</Badge> : <Badge variant="destructive">Pasif</Badge>}
+                    {u.is_active ? <Badge variant="success">{t("admin.active")}</Badge> : <Badge variant="destructive">{t("admin.inactive")}</Badge>}
                   </TableCell>
                   <TableCell>
                     <Button
@@ -277,7 +295,7 @@ function UsersTab() {
                       size="icon-sm"
                       className="text-muted-foreground hover:text-destructive"
                       disabled={remove.isPending || u.id === currentUser?.id}
-                      title={u.id === currentUser?.id ? "Kendi hesabınızı silemezsiniz" : "Kullanıcıyı sil"}
+                      title={u.id === currentUser?.id ? t("admin.cannotDeleteSelf") : t("admin.deleteUser")}
                       onClick={() => handleDeleteUser(u)}
                     >
                       <Trash2 className="size-4" />
@@ -294,6 +312,8 @@ function UsersTab() {
 }
 
 function GroupsTab() {
+  const t = useT();
+  const apiErr = useApiError();
   const { data, isLoading } = useAdminGroups();
   const create = useCreateGroup();
   const remove = useDeleteGroup();
@@ -301,12 +321,12 @@ function GroupsTab() {
   const [form, setForm] = React.useState({ name: "", description: "" });
 
   const handleDeleteGroup = async (g: { id: string; name: string }) => {
-    if (!window.confirm(`"${g.name}" grubunu silmek istediğinize emin misiniz?`)) return;
+    if (!window.confirm(t("admin.deleteGroupConfirm", { name: g.name }))) return;
     try {
       await remove.mutateAsync(g.id);
-      toast.success("Grup silindi");
+      toast.success(t("admin.groupDeleted"));
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Grup silinemedi"));
+      toast.error(apiErr(err, "admin.groupDeleteFail"));
     }
   };
 
@@ -314,37 +334,37 @@ function GroupsTab() {
     if (!form.name.trim()) return;
     try {
       await create.mutateAsync(form);
-      toast.success("Grup oluşturuldu");
+      toast.success(t("admin.groupCreated"));
       setOpen(false);
       setForm({ name: "", description: "" });
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Grup oluşturulamadı"));
+      toast.error(apiErr(err, "admin.groupCreateFail"));
     }
   };
 
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle>Gruplar</CardTitle>
+        <CardTitle>{t("admin.groups")}</CardTitle>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button size="sm"><Plus /> Yeni Grup</Button>
+            <Button size="sm"><Plus /> {t("admin.newGroup")}</Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>Yeni Grup</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{t("admin.newGroup")}</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label>Grup adı</Label>
+                <Label>{t("admin.groupName")}</Label>
                 <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label>Açıklama</Label>
+                <Label>{t("admin.groupDesc")}</Label>
                 <Input value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>İptal</Button>
-              <Button onClick={submit} disabled={create.isPending}>Oluştur</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>{t("common.cancel")}</Button>
+              <Button onClick={submit} disabled={create.isPending}>{t("admin.create")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -358,14 +378,14 @@ function GroupsTab() {
               <div key={g.id} className="flex items-start justify-between gap-2 rounded-lg border border-border p-4">
                 <div className="min-w-0">
                   <p className="font-semibold">{g.name}</p>
-                  <p className="text-sm text-muted-foreground">{g.description || "Açıklama yok"}</p>
+                  <p className="text-sm text-muted-foreground">{g.description || t("admin.noDescription")}</p>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon-sm"
                   className="shrink-0 text-muted-foreground hover:text-destructive"
                   disabled={remove.isPending}
-                  title="Grubu sil"
+                  title={t("admin.deleteGroup")}
                   onClick={() => handleDeleteGroup(g)}
                 >
                   <Trash2 className="size-4" />
@@ -374,7 +394,7 @@ function GroupsTab() {
             ))}
           </div>
         ) : (
-          <EmptyState className="border-0" icon={UsersRound} title="Grup yok" description="Henüz grup oluşturulmadı." />
+          <EmptyState className="border-0" icon={UsersRound} title={t("admin.noGroups")} description={t("admin.noGroupsDesc")} />
         )}
       </CardContent>
     </Card>
@@ -382,6 +402,8 @@ function GroupsTab() {
 }
 
 function LicenseTab() {
+  const t = useT();
+  const apiErr = useApiError();
   const { data: license, isLoading } = useLicense();
   const activate = useActivateLicense();
   const deactivate = useDeactivateLicense();
@@ -393,28 +415,28 @@ function LicenseTab() {
 
   const handleActivate = async () => {
     if (!key.trim()) {
-      toast.warning("Lütfen bir lisans anahtarı girin");
+      toast.warning(t("admin.enterLicenseKey"));
       return;
     }
     try {
       const res = await activate.mutateAsync(key.trim());
       if (res.is_enterprise) {
-        toast.success("Enterprise sürüm etkinleştirildi");
+        toast.success(t("admin.enterpriseActivated"));
         setKey("");
       } else {
-        toast.message("Lisans uygulandı", { description: `Sürüm: ${res.edition}` });
+        toast.message(t("admin.licenseApplied"), { description: t("roles.editionLabel", { edition: res.edition }) });
       }
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Lisans etkinleştirilemedi"));
+      toast.error(apiErr(err, "admin.licenseActivateFail"));
     }
   };
 
   const handleDeactivate = async () => {
     try {
       await deactivate.mutateAsync();
-      toast.success("Standart sürüme geçildi");
+      toast.success(t("admin.switchedStandard"));
     } catch (err) {
-      toast.error(apiErrorMessage(err, "İşlem başarısız"));
+      toast.error(apiErr(err, "admin.operationFail"));
     }
   };
 
@@ -422,9 +444,9 @@ function LicenseTab() {
     try {
       const res = await issue.mutateAsync({ licensed_to: "Medarix Kurumsal", seats: 0, valid_days: 365 });
       setKey(res.key);
-      toast.success("Demo Enterprise anahtarı oluşturuldu, etkinleştirebilirsiniz");
+      toast.success(t("admin.demoKeyCreated"));
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Anahtar oluşturulamadı"));
+      toast.error(apiErr(err, "admin.demoKeyFail"));
     }
   };
 
@@ -459,21 +481,21 @@ function LicenseTab() {
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold">Medarix {isEnterprise ? "Enterprise" : "Standard"}</h3>
                 {isEnterprise ? (
-                  <Badge variant="success">Etkin</Badge>
+                  <Badge variant="success">{t("admin.activeBadge")}</Badge>
                 ) : (
-                  <Badge variant="muted">Standart Sürüm</Badge>
+                  <Badge variant="muted">{t("admin.licenseStandardBadge")}</Badge>
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
                 {isEnterprise
-                  ? `Lisans sahibi: ${license?.licensed_to || "—"}`
-                  : "Tüm kurumsal özellikleri açmak için bir Enterprise lisansı etkinleştirin."}
+                  ? `${t("admin.licenseHolder")}: ${license?.licensed_to || "—"}`
+                  : t("admin.licenseEnterpriseHint")}
               </p>
             </div>
           </div>
           {isEnterprise && (
             <Button variant="outline" size="sm" onClick={handleDeactivate} disabled={deactivate.isPending}>
-              Standart Sürüme Dön
+              {t("admin.switchToStandard")}
             </Button>
           )}
         </CardContent>
@@ -481,14 +503,14 @@ function LicenseTab() {
 
       {isEnterprise && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <InfoCard label="Lisans Sahibi" value={license?.licensed_to || "—"} />
-          <InfoCard label="Koltuk" value={license?.seats ? license.seats : "Sınırsız"} />
+          <InfoCard label={t("admin.licenseHolder")} value={license?.licensed_to || "—"} />
+          <InfoCard label={t("admin.seats")} value={license?.seats ? license.seats : t("admin.unlimited")} />
           <InfoCard
-            label="Son Kullanma"
-            value={license?.expires_at ? formatDateTime(license.expires_at) : "Süresiz"}
+            label={t("admin.expiresAt")}
+            value={license?.expires_at ? formatDateTime(license.expires_at) : t("admin.perpetual")}
           />
           <InfoCard
-            label="Etkinleştirme"
+            label={t("admin.activatedAt")}
             value={license?.activated_at ? formatDateTime(license.activated_at) : "—"}
           />
         </div>
@@ -593,6 +615,7 @@ function FeatureRow({ label, enabled }: { label: string; enabled: boolean }) {
 }
 
 function AuditTab() {
+  const t = useT();
   const { data, isLoading } = useAuditEvents(300);
   const [query, setQuery] = React.useState("");
 
@@ -622,13 +645,13 @@ function AuditTab() {
   return (
     <Card>
       <CardHeader className="flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <CardTitle>Denetim Kayıtları</CardTitle>
+        <CardTitle>{t("admin.auditTitle")}</CardTitle>
         <div className="relative w-full sm:w-80">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Kullanıcı, eylem, IP, kaynak ara…"
+            placeholder={t("admin.auditSearch")}
             className="pl-9"
           />
         </div>
@@ -642,12 +665,12 @@ function AuditTab() {
               <Table>
                 <TableHeader className="sticky top-0 z-10 bg-card">
                   <TableRow>
-                    <TableHead>Zaman</TableHead>
-                    <TableHead>Kategori</TableHead>
-                    <TableHead>Eylem</TableHead>
-                    <TableHead>Kullanıcı</TableHead>
-                    <TableHead>Kaynak</TableHead>
-                    <TableHead>IP Adresi</TableHead>
+                    <TableHead>{t("admin.auditTime")}</TableHead>
+                    <TableHead>{t("admin.auditCategoryCol")}</TableHead>
+                    <TableHead>{t("admin.auditActionCol")}</TableHead>
+                    <TableHead>{t("admin.auditUserCol")}</TableHead>
+                    <TableHead>{t("admin.auditResourceCol")}</TableHead>
+                    <TableHead>{t("admin.auditIpCol")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -681,7 +704,7 @@ function AuditTab() {
                               </div>
                             </div>
                           ) : (
-                            <Badge variant="muted">Sistem</Badge>
+                            <Badge variant="muted">{t("admin.system")}</Badge>
                           )}
                         </TableCell>
                         <TableCell className="text-sm">
@@ -703,16 +726,16 @@ function AuditTab() {
             </div>
             <p className="mt-3 text-xs text-muted-foreground">
               {query
-                ? `${filtered.length} / ${data?.length ?? 0} kayıt eşleşti`
-                : `${filtered.length} kayıt gösteriliyor`}
+                ? t("admin.recordsMatch", { count: String(filtered.length), total: String(data?.length ?? 0) })
+                : t("admin.recordsShown", { count: String(filtered.length) })}
             </p>
           </>
         ) : (
           <EmptyState
             className="border-0"
             icon={ScrollText}
-            title={query ? "Eşleşen kayıt yok" : "Kayıt yok"}
-            description={query ? "Arama kriterlerinizi değiştirin." : "Henüz denetim olayı bulunmuyor."}
+            title={query ? t("admin.noAuditMatch") : t("admin.noAudit")}
+            description={query ? t("admin.noAuditMatchDesc") : t("admin.noAuditDesc")}
           />
         )}
       </CardContent>
@@ -721,6 +744,9 @@ function AuditTab() {
 }
 
 function SettingsTab() {
+  const t = useT();
+  const { locale } = useLocale();
+  const apiErr = useApiError();
   const { data, isLoading } = useSystemSettings();
   const update = useUpdateSystemSettings();
   const verifyAuth = useVerifyAuthSettings();
@@ -764,34 +790,34 @@ function SettingsTab() {
   const fetchTextModels = async (group: NonNullable<typeof data>[number]) => {
     const baseUrl = settingValue(group, AI_TEXT_BASE_URL_KEY).trim();
     if (!baseUrl) {
-      toast.warning("Önce dil modeli sunucusu adresini girin");
+      toast.warning(t("admin.enterLlmUrl"));
       return;
     }
     setTextModelsList(null);
     try {
       const res = await listTextModels.mutateAsync(baseUrl);
       setTextModelsList(res.models);
-      if (res.models.length === 0) toast.info("Sunucuda yüklü dil modeli bulunamadı");
-      else toast.success(`${res.models.length} dil modeli listelendi`);
+      if (res.models.length === 0) toast.info(t("admin.noLlmModels"));
+      else toast.success(t("admin.modelsListed", { count: String(res.models.length) }));
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Dil modelleri alınamadı"));
+      toast.error(apiErr(err, "admin.llmModelsFail"));
     }
   };
 
   const fetchTranscriptionModels = async (group: NonNullable<typeof data>[number]) => {
     const baseUrl = settingValue(group, AI_TRANSCRIPTION_BASE_URL_KEY).trim();
     if (!baseUrl) {
-      toast.warning("Önce transkripsiyon sunucusu adresini girin");
+      toast.warning(t("admin.enterWhisperUrl"));
       return;
     }
     setTranscriptionModelsList(null);
     try {
       const res = await listTranscriptionModels.mutateAsync(baseUrl);
       setTranscriptionModelsList(res.models);
-      if (res.models.length === 0) toast.info("Sunucuda yüklü transkripsiyon modeli bulunamadı");
-      else toast.success(`${res.models.length} transkripsiyon modeli listelendi`);
+      if (res.models.length === 0) toast.info(t("admin.noWhisperModels"));
+      else toast.success(t("admin.transcriptionModelsListed", { count: String(res.models.length) }));
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Transkripsiyon modelleri alınamadı"));
+      toast.error(apiErr(err, "admin.whisperModelsFail"));
     }
   };
 
@@ -804,24 +830,25 @@ function SettingsTab() {
         test_password: testPassword || undefined,
       });
       setVerifyResult(result);
-      if (result.ok) toast.success(result.message);
-      else toast.error(result.message);
+      const msg = ldapVerifyMessage(result, locale);
+      if (result.ok) toast.success(msg);
+      else toast.error(msg);
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Doğrulama başarısız"));
+      toast.error(apiErr(err, "admin.verifyFail"));
     }
   };
 
   const save = async () => {
     if (Object.keys(draft).length === 0) {
-      toast.info("Değişiklik yok");
+      toast.info(t("admin.noChanges"));
       return;
     }
     try {
       await update.mutateAsync(draft);
-      toast.success("Ayarlar kaydedildi");
+      toast.success(t("admin.settingsSaved"));
       setDraft({});
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Ayarlar kaydedilemedi"));
+      toast.error(apiErr(err, "admin.settingsSaveFail"));
     }
   };
 
@@ -829,7 +856,7 @@ function SettingsTab() {
 
   return (
     <div className="space-y-4">
-      {data?.map((group) => {
+      {data?.filter((g) => g.category !== BRANDING_CATEGORY).map((group) => {
         const toggleKey = CATEGORY_TOGGLE_KEY[group.category];
         const toggleSetting = toggleKey ? group.settings.find((s) => s.key === toggleKey) : undefined;
         const fieldSettings = group.settings.filter((s) => !MODULE_TOGGLE_KEYS.has(s.key));
@@ -843,7 +870,7 @@ function SettingsTab() {
         return (
           <Card key={group.category}>
             <CardHeader className="flex-row flex-wrap items-center justify-between gap-4 space-y-0">
-              <CardTitle className="text-base">{group.category}</CardTitle>
+              <CardTitle className="text-base">{settingsCategoryLabel(group.category, locale)}</CardTitle>
               <div className="flex flex-wrap items-center gap-2">
                 {isAuthCategory && (
                   <Button
@@ -854,18 +881,18 @@ function SettingsTab() {
                     onClick={() => runAuthVerify(group)}
                   >
                     <ShieldVerify className="size-4" />
-                    {verifyAuth.isPending ? "Doğrulanıyor…" : "Bağlantıyı Doğrula"}
+                    {verifyAuth.isPending ? t("admin.verifying") : t("admin.verifyConnection")}
                   </Button>
                 )}
                 {toggleKey && (
                   <div className="flex items-center gap-3">
                     <Badge variant={moduleEnabled ? "success" : "muted"}>
-                      {moduleEnabled ? "Aktif" : "Pasif"}
+                      {moduleEnabled ? t("admin.active") : t("admin.inactive")}
                     </Badge>
                     <Switch
                       checked={moduleEnabled}
                       onCheckedChange={(checked) => setValue(toggleKey, checked ? "true" : "false")}
-                      aria-label={`${group.category} modülünü aç/kapat`}
+                      aria-label={t("admin.moduleToggleAria", { category: settingsCategoryLabel(group.category, locale) })}
                     />
                   </div>
                 )}
@@ -890,8 +917,12 @@ function SettingsTab() {
                   <div key={s.key} className="space-y-2">
                     <div className="grid gap-1.5 sm:grid-cols-[1fr_1.4fr] sm:items-center">
                       <div>
-                        <Label htmlFor={s.key}>{s.label}</Label>
-                        {s.description && <p className="text-xs text-muted-foreground">{s.description}</p>}
+                        <Label htmlFor={s.key}>{settingLabel(s.key, locale, s.label)}</Label>
+                        {s.description && (
+                          <p className="text-xs text-muted-foreground">
+                            {settingDescription(s.key, locale, s.description)}
+                          </p>
+                        )}
                       </div>
                       {showTextModelList || showTranscriptionModelList ? (
                         <div className="flex gap-2">
@@ -919,10 +950,10 @@ function SettingsTab() {
                             {showTextModelList
                               ? listTextModels.isPending
                                 ? "…"
-                                : "Listele"
+                                : t("admin.listModels")
                               : listTranscriptionModels.isPending
                                 ? "…"
-                                : "Listele"}
+                                : t("admin.listModels")}
                           </Button>
                         </div>
                       ) : (
@@ -944,7 +975,7 @@ function SettingsTab() {
                             disabled={fieldsDisabled}
                             onClick={() => {
                               setValue(s.key, modelId);
-                              toast.message("Model seçildi", { description: modelId });
+                              toast.message(t("admin.modelSelected"), { description: modelId });
                             }}
                             className={cn(
                               "rounded-md border px-2 py-1 font-mono text-xs transition-colors",
@@ -964,10 +995,10 @@ function SettingsTab() {
 
               {isAuthCategory && moduleEnabled && (
                 <div className="mt-2 space-y-3 rounded-lg border border-dashed border-border p-4">
-                  <p className="text-sm font-medium">İsteğe bağlı: tam giriş testi</p>
+                  <p className="text-sm font-medium">{t("admin.ldapOptionalTest")}</p>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5">
-                      <Label htmlFor="ldap-test-user">Test kullanıcı adı</Label>
+                      <Label htmlFor="ldap-test-user">{t("admin.ldapTestUser")}</Label>
                       <Input
                         id="ldap-test-user"
                         value={testUsername}
@@ -977,7 +1008,7 @@ function SettingsTab() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="ldap-test-pass">Test parolası</Label>
+                      <Label htmlFor="ldap-test-pass">{t("admin.ldapTestPass")}</Label>
                       <Input
                         id="ldap-test-pass"
                         type="password"
@@ -997,14 +1028,14 @@ function SettingsTab() {
                     verifyResult.ok ? "border-primary/30 bg-primary/5" : "border-destructive/40 bg-destructive/5",
                   )}
                 >
-                  <p className="font-medium">{verifyResult.message}</p>
+                  <p className="font-medium">{ldapVerifyMessage(verifyResult, locale)}</p>
                   <ul className="mt-2 space-y-1">
                     {verifyResult.checks.map((c) => (
                       <li key={c.id} className="flex flex-wrap items-baseline gap-2 text-xs">
                         <Badge variant={c.ok ? "success" : "destructive"} className="shrink-0">
-                          {c.ok ? "OK" : "Hata"}
+                          {c.ok ? t("admin.verifyOk") : t("admin.verifyError")}
                         </Badge>
-                        <span className="font-medium">{c.label}</span>
+                        <span className="font-medium">{ldapCheckLabel(c.id, locale, c.label)}</span>
                         {c.detail && <span className="text-muted-foreground">{c.detail}</span>}
                       </li>
                     ))}
@@ -1017,7 +1048,7 @@ function SettingsTab() {
       })}
       <div className="flex justify-end">
         <Button onClick={save} disabled={update.isPending || Object.keys(draft).length === 0}>
-          <CheckCircle2 /> Değişiklikleri Kaydet
+          <CheckCircle2 /> {t("admin.saveChanges")}
         </Button>
       </div>
     </div>
@@ -1025,17 +1056,18 @@ function SettingsTab() {
 }
 
 function SecurityTab() {
+  const t = useT();
   const { data, isLoading } = useSecurityPosture();
   const LABELS: Record<string, string> = {
-    audit: "Denetim Kaydı",
-    auth: "Kimlik Doğrulama",
-    rbac: "Yetkilendirme (RBAC)",
-    secrets: "Sır Yönetimi",
-    transport: "Taşıma Güvenliği",
+    audit: t("admin.auditLogging"),
+    auth: t("admin.authentication"),
+    rbac: t("admin.authorization"),
+    secrets: t("admin.secretsMgmt"),
+    transport: t("admin.transportSecurity"),
   };
   return (
     <Card>
-      <CardHeader><CardTitle>Güvenlik Durumu</CardTitle></CardHeader>
+      <CardHeader><CardTitle>{t("admin.securityStatus")}</CardTitle></CardHeader>
       <CardContent className="grid gap-3 sm:grid-cols-2">
         {isLoading
           ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)

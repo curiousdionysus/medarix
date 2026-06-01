@@ -1,14 +1,10 @@
 import type { RoleSlug } from "@/types/api";
+import { getStoredLocale, translateForLocale, type Locale } from "@/features/i18n/locale-context";
 
-export const ROLE_LABELS: Record<string, string> = {
-  radiologist: "Radyolog",
-  reporter: "Raportör",
-  technician: "Teknisyen",
-  admin: "Admin",
-  viewer: "Görüntüleyici",
-  external_consultant: "Dış Konsültan",
-};
-
-export function roleLabel(slug: RoleSlug | string, fallback?: string): string {
-  return ROLE_LABELS[slug] ?? fallback ?? slug;
+export function roleLabel(slug: RoleSlug | string, fallback?: string, locale?: Locale): string {
+  const loc = locale ?? getStoredLocale();
+  const key = `roles.${slug}`;
+  const translated = translateForLocale(loc, key);
+  if (translated !== key) return translated;
+  return fallback ?? slug;
 }

@@ -26,7 +26,9 @@ import {
   useStudies,
   downloadReportPdf,
 } from "@/features/studies/api";
-import { REPORT_SECTIONS, parseSections, serializeSections, type SectionMap } from "@/features/reports/sections";
+import { parseSections, serializeSections, type SectionMap } from "@/features/reports/sections";
+import { useApiError, useReportSections } from "@/features/i18n/helpers";
+import { useLocale, useT } from "@/features/i18n/locale-context";
 import { VersionHistory } from "@/features/reports/version-history";
 import { AiSuggestionPanel } from "@/features/ai/suggestion-panel";
 import { useIsEnterprise } from "@/features/license/api";
@@ -40,11 +42,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ReportStatusBadge, ModalityBadge, PriorityBadge } from "@/components/shared/status-badge";
-import { apiErrorMessage } from "@/lib/api";
 import { cn, formatDate, initials } from "@/lib/utils";
-import type { ReportStatus } from "@/types/api";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
+
+const TALL_SECTIONS = new Set(["findings", "conclusion"]);
 
 export default function ReportsPage() {
   const { studyId } = useParams();
@@ -53,17 +55,18 @@ export default function ReportsPage() {
 }
 
 function ReportPicker() {
+  const t = useT();
   const { data, isLoading } = useStudies({ limit: 25 });
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Raporlar"
-        description="Düzenlemek için bir çalışma seçin."
+        title={t("reports.title")}
+        description={t("reports.description")}
         icon={<FileText className="size-5" />}
       />
       <Card>
         <CardHeader>
-          <CardTitle>Son Çalışmalar</CardTitle>
+          <CardTitle>{t("reports.recentStudies")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1.5">
           {isLoading ? (
@@ -77,7 +80,7 @@ function ReportPicker() {
               >
                 <ModalityBadge modality={s.modality} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{s.patient_name || "İsimsiz hasta"}</p>
+                  <p className="truncate text-sm font-semibold">{s.patient_name || t("common.unnamedPatient")}</p>
                   <p className="truncate text-xs text-muted-foreground">
                     {s.study_description || "—"} · {s.accession_number || "—"}
                   </p>
@@ -89,8 +92,8 @@ function ReportPicker() {
           ) : (
             <EmptyState
               icon={FileText}
-              title="Rapor yok"
-              description="Medarix'te henüz oluşturulmuş rapor yok."
+              title={t("reports.noReports")}
+              description={t("reports.noReportsDesc")}
             />
           )}
         </CardContent>
@@ -100,6 +103,10 @@ function ReportPicker() {
 }
 
 function ReportEditor({ studyId }: { studyId: string }) {
+  const t = useT();
+  const { locale } = useLocale();
+  const apiErr = useApiError();
+  const reportSections = useReportSections();
   const navigate = useNavigate();
   const { data: study, isLoading: studyLoading } = useStudy(studyId);
   const { data: report, isLoading: reportLoading } = useStudyReport(studyId);
@@ -118,7 +125,6 @@ function ReportEditor({ studyId }: { studyId: string }) {
   const hydrated = React.useRef(false);
   const lastSaved = React.useRef<string>("");
 
-  // Hydrate editor from server once the report loads.
   React.useEffect(() => {
     if (reportLoading || hydrated.current) return;
     const content = report?.content ?? "";
@@ -135,44 +141,49 @@ function ReportEditor({ studyId }: { studyId: string }) {
   }, [report, reportLoading]);
 
   const currentContent = React.useCallback(
-    () => (mode === "structured" ? serializeSections(sections) : raw),
-    [mode, sections, raw],
+    () => (mode === "structured" ? serializeSections(sections, locale) : raw),
+    [mode, sections, raw, locale],
   );
 
   const isSigned = report?.status === "signed" && !amending;
   const editable = !isSigned;
 
-  // Debounced autosave.
   React.useEffect(() => {
     if (!hydrated.current || !editable) return;
     const content = currentContent();
-    if (!content.trim() || content === lastSaved.current) return;
-    setSaveState("saving");
-    const id = setTimeout(async () => {
+    if (content === lastSaved.current) return;
+    const timer = setTimeout(async () => {
+      setSaveState("saving");
       try {
-        const status: ReportStatus = amending ? "amended" : "draft";
-        await save.mutateAsync({ content, transcript: report?.transcript, status });
+        await save.mutateAsync({
+          content,
+          transcript: report?.transcript,
+          status: amending ? "amended" : "draft",
+        });
         lastSaved.current = content;
         setSaveState("saved");
       } catch {
         setSaveState("error");
       }
     }, 1200);
-    return () => clearTimeout(id);
-  }, [sections, raw, mode, editable, amending]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => clearTimeout(timer);
+  }, [sections, raw, mode, editable, amending, currentContent, save, report?.transcript]);
 
   const toggleMode = () => {
     if (mode === "structured") {
-      setRaw(serializeSections(sections));
+      setRaw(serializeSections(sections, locale));
       setMode("raw");
     } else {
-      setSections(parseSections(raw).map);
-      setMode("structured");
+      const parsed = parseSections(raw);
+      if (parsed.structured) {
+        setSections(parsed.map);
+        setMode("structured");
+      }
     }
   };
 
   const applyTemplate = (id: string) => {
-    const tpl = templates?.find((t) => t.id === id);
+    const tpl = templates?.find((x) => x.id === id);
     if (!tpl) return;
     const parsed = parseSections(tpl.content);
     if (parsed.structured) {
@@ -182,15 +193,14 @@ function ReportEditor({ studyId }: { studyId: string }) {
       setMode("raw");
       setRaw(tpl.content);
     }
-    toast.success(`"${tpl.title}" şablonu yüklendi`);
+    toast.success(t("reports.templateLoaded", { title: tpl.title }));
   };
 
   const handleSign = async () => {
     if (!report?.id) {
-      toast.error("Önce raporu kaydedin");
+      toast.error(t("reports.saveFirst"));
       return;
     }
-    // Ensure latest content is persisted before signing.
     const content = currentContent();
     try {
       if (content !== lastSaved.current) {
@@ -199,15 +209,15 @@ function ReportEditor({ studyId }: { studyId: string }) {
       }
       await sign.mutateAsync(report.id);
       setAmending(false);
-      toast.success("Rapor imzalandı");
+      toast.success(t("reports.signSuccess"));
     } catch (err) {
-      toast.error(apiErrorMessage(err, "İmzalama başarısız"));
+      toast.error(apiErr(err, "reports.signFailShort"));
     }
   };
 
   const handleSendToPacs = async () => {
     if (!report?.id) {
-      toast.error("Önce raporu kaydedin");
+      toast.error(t("reports.saveFirst"));
       return;
     }
     const content = currentContent();
@@ -220,17 +230,19 @@ function ReportEditor({ studyId }: { studyId: string }) {
       setAmending(false);
       const status = res.pacs_status?.status ?? "";
       if (status === "stored_in_orthanc_study_attachment") {
-        toast.success("Rapor imzalandı ve PACS'a gönderildi");
+        toast.success(t("reports.pacsSignedSent"));
       } else if (status.startsWith("queued")) {
-        toast.success("Rapor imzalandı, PACS gönderim kuyruğuna alındı");
+        toast.success(t("reports.pacsQueued"));
       } else {
         const detail = res.pacs_status?.detail;
-        toast.message("Rapor imzalandı", {
-          description: detail ? `PACS: ${detail}` : `PACS durumu: ${status || "bilinmiyor"}`,
+        toast.message(t("reports.pacsSignedTitle"), {
+          description: detail
+            ? t("reports.pacsStatusDetail", { detail })
+            : t("reports.pacsStatusUnknown", { status: status || t("common.unknown") }),
         });
       }
     } catch (err) {
-      toast.error(apiErrorMessage(err, "PACS'a gönderim başarısız"));
+      toast.error(apiErr(err, "reports.pacsFail"));
     }
   };
 
@@ -245,7 +257,7 @@ function ReportEditor({ studyId }: { studyId: string }) {
         study_description: study?.study_description ?? undefined,
       });
     } catch (err) {
-      toast.error(apiErrorMessage(err, "PDF oluşturulamadı"));
+      toast.error(apiErr(err, "reports.pdfFail"));
     }
   };
 
@@ -263,7 +275,6 @@ function ReportEditor({ studyId }: { studyId: string }) {
 
   return (
     <div className="space-y-5">
-      {/* Patient context + actions */}
       <Card>
         <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
@@ -272,7 +283,7 @@ function ReportEditor({ studyId }: { studyId: string }) {
             </Avatar>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold">{study?.patient_name || "İsimsiz hasta"}</h2>
+                <h2 className="text-lg font-bold">{study?.patient_name || t("common.unnamedPatient")}</h2>
                 <ModalityBadge modality={study?.modality} />
                 <PriorityBadge priority={study?.priority as never} />
               </div>
@@ -295,7 +306,7 @@ function ReportEditor({ studyId }: { studyId: string }) {
                   setMode("raw");
                   setRaw(v.content);
                 }
-                toast.success(`v${v.version} geri yüklendi`);
+                toast.success(t("versionHistory.restored", { version: String(v.version) }));
               }}
             />
             <Button variant="outline" size="sm" onClick={handlePdf}>
@@ -307,15 +318,15 @@ function ReportEditor({ studyId }: { studyId: string }) {
               onClick={handleSendToPacs}
               disabled={!report?.id || sendToPacs.isPending}
             >
-              <Server /> {sendToPacs.isPending ? "Gönderiliyor…" : "PACS'a Gönder"}
+              <Server /> {sendToPacs.isPending ? t("reports.sending") : t("reports.sendPacs")}
             </Button>
             {isSigned ? (
               <Button variant="secondary" size="sm" onClick={() => setAmending(true)}>
-                <FilePlus2 /> Düzelt
+                <FilePlus2 /> {t("reports.amend")}
               </Button>
             ) : (
               <Button size="sm" onClick={handleSign} disabled={sign.isPending}>
-                <CheckCircle2 /> İmzala
+                <CheckCircle2 /> {t("reports.sign")}
               </Button>
             )}
           </div>
@@ -325,25 +336,24 @@ function ReportEditor({ studyId }: { studyId: string }) {
       {isSigned && (
         <div className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-2.5 text-sm text-success">
           <Lock className="size-4" />
-          Bu rapor imzalandı ve salt okunurdur. Değişiklik için "Düzelt" seçeneğini kullanın.
+          {t("reports.signedReadonly")}
         </div>
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Editor */}
         <div className="space-y-4 lg:col-span-2">
           <div className="flex items-center justify-between">
-            <PageHeader title="Rapor Editörü" className="[&_h1]:text-lg" />
+            <PageHeader title={t("reports.editor")} className="[&_h1]:text-lg" />
             <div className="flex items-center gap-2">
               {templates && templates.length > 0 && (
                 <Select onValueChange={applyTemplate} disabled={!editable}>
                   <SelectTrigger className="h-8 w-40 text-xs">
-                    <SelectValue placeholder="Şablon ekle" />
+                    <SelectValue placeholder={t("reports.addTemplate")} />
                   </SelectTrigger>
                   <SelectContent>
-                    {templates.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>
-                        {t.modality} · {t.title}
+                    {templates.map((tpl) => (
+                      <SelectItem key={tpl.id} value={tpl.id}>
+                        {tpl.modality} · {tpl.title}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -351,14 +361,14 @@ function ReportEditor({ studyId }: { studyId: string }) {
               )}
               <Button variant="outline" size="sm" onClick={toggleMode}>
                 {mode === "structured" ? <AlignLeft /> : <LayoutList />}
-                {mode === "structured" ? "Düz Metin" : "Yapılandırılmış"}
+                {mode === "structured" ? t("reports.plainText") : t("reports.structured")}
               </Button>
             </div>
           </div>
 
           {mode === "structured" ? (
             <div className="space-y-3">
-              {REPORT_SECTIONS.map((s) => (
+              {reportSections.map((s) => (
                 <Card key={s.key}>
                   <CardContent className="p-3">
                     <Label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -368,17 +378,17 @@ function ReportEditor({ studyId }: { studyId: string }) {
                       <Textarea
                         value={sections[s.key]}
                         onChange={(e) => setSections((prev) => ({ ...prev, [s.key]: e.target.value }))}
-                        placeholder={`${s.label} bölümü…`}
+                        placeholder={t("reports.sectionPlaceholder", { label: s.label })}
                         className={cn(
                           "min-h-16 resize-y border-0 bg-transparent px-0 shadow-none focus-visible:ring-0",
-                          ["bulgular", "sonuc"].includes(s.key) && "min-h-24",
+                          TALL_SECTIONS.has(s.key) && "min-h-24",
                         )}
                       />
                     ) : (
                       <div
                         className={cn(
                           "min-h-16 select-text whitespace-pre-wrap text-sm leading-relaxed",
-                          ["bulgular", "sonuc"].includes(s.key) && "min-h-24",
+                          TALL_SECTIONS.has(s.key) && "min-h-24",
                         )}
                       >
                         {sections[s.key] || <span className="text-muted-foreground">—</span>}
@@ -395,7 +405,7 @@ function ReportEditor({ studyId }: { studyId: string }) {
                   <Textarea
                     value={raw}
                     onChange={(e) => setRaw(e.target.value)}
-                    placeholder="Rapor metnini buraya yazın…"
+                    placeholder={t("reports.rawPlaceholder")}
                     className="min-h-[28rem] font-mono text-sm"
                   />
                 ) : (
@@ -408,7 +418,6 @@ function ReportEditor({ studyId }: { studyId: string }) {
           )}
         </div>
 
-        {/* Side panel */}
         <div className="space-y-4">
           {isEnterprise && (
             <AiSuggestionPanel
@@ -430,21 +439,21 @@ function ReportEditor({ studyId }: { studyId: string }) {
           <Card>
             <CardHeader className="p-4">
               <CardTitle className="flex items-center gap-2 text-base">
-                <PenLine className="size-4 text-primary" /> Rapor Bilgisi
+                <PenLine className="size-4 text-primary" /> {t("reports.reportInfo")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 p-4 pt-0 text-sm">
-              <InfoRow label="Sürüm" value={report ? `v${report.version}` : "—"} icon={Clock} />
+              <InfoRow label={t("reports.version")} value={report ? `v${report.version}` : "—"} icon={Clock} />
               <InfoRow
-                label="Durum"
-                value={report ? <ReportStatusBadge status={report.status} /> : "Yeni"}
+                label={t("reports.status")}
+                value={report ? <ReportStatusBadge status={report.status} /> : t("reports.statusNew")}
               />
               <InfoRow
-                label="İmza"
-                value={report?.signed_at ? formatDate(report.signed_at) : "İmzalanmadı"}
+                label={t("reports.signature")}
+                value={report?.signed_at ? formatDate(report.signed_at) : t("reports.notSigned")}
               />
               <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate("/workspace/dictation")}>
-                Yeni diktasyon ekle
+                {t("reports.addDictation")}
               </Button>
             </CardContent>
           </Card>
@@ -455,22 +464,23 @@ function ReportEditor({ studyId }: { studyId: string }) {
 }
 
 function SaveIndicator({ state }: { state: SaveState }) {
+  const t = useT();
   if (state === "saving")
     return (
       <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <CloudUpload className="size-4 animate-pulse" /> Kaydediliyor…
+        <CloudUpload className="size-4 animate-pulse" /> {t("reports.saving")}
       </span>
     );
   if (state === "saved")
     return (
       <span className="flex items-center gap-1.5 text-xs text-success">
-        <Cloud className="size-4" /> Kaydedildi
+        <Cloud className="size-4" /> {t("reports.saved")}
       </span>
     );
   if (state === "error")
     return (
       <span className="flex items-center gap-1.5 text-xs text-destructive">
-        <CloudOff className="size-4" /> Kaydedilemedi
+        <CloudOff className="size-4" /> {t("reports.saveFailed")}
       </span>
     );
   return null;

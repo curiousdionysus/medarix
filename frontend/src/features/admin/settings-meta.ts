@@ -11,6 +11,8 @@ export const AUTH_CATEGORY = "Kimlik Doğrulama";
 
 export const AI_CATEGORY = "Yapay Zeka Servisleri";
 
+export { BRANDING_CATEGORY } from "@/features/branding/types";
+
 export const AI_TEXT_BASE_URL_KEY = "ai.text_base_url";
 export const AI_TEXT_MODEL_KEY = "ai.text_model";
 export const AI_TRANSCRIPTION_BASE_URL_KEY = "ai.transcription_base_url";

@@ -1,5 +1,6 @@
 import { History, RotateCcw } from "lucide-react";
 import { useReportVersions } from "@/features/studies/api";
+import { useT } from "@/features/i18n/locale-context";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export function VersionHistory({ reportId, onRestore }: Props) {
+  const t = useT();
   const { data, isLoading } = useReportVersions(reportId);
 
   return (
@@ -27,13 +29,13 @@ export function VersionHistory({ reportId, onRestore }: Props) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" disabled={!reportId}>
           <History />
-          Sürüm Geçmişi
+          {t("versionHistory.title")}
           {data?.length ? <span className="ml-1 text-xs text-muted-foreground">({data.length})</span> : null}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Sürüm Geçmişi</DialogTitle>
+          <DialogTitle>{t("versionHistory.title")}</DialogTitle>
         </DialogHeader>
         <div className="max-h-[28rem] space-y-2 overflow-y-auto">
           {isLoading ? (
@@ -47,17 +49,21 @@ export function VersionHistory({ reportId, onRestore }: Props) {
                     <ReportStatusBadge status={v.status} />
                   </div>
                   <Button size="sm" variant="ghost" onClick={() => onRestore(v)}>
-                    <RotateCcw /> Geri Yükle
+                    <RotateCcw /> {t("versionHistory.restore")}
                   </Button>
                 </div>
                 <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{v.content}</p>
                 <p className="mt-1.5 text-[11px] text-muted-foreground">
-                  {v.author_name || "Bilinmeyen"} · {formatDateTime(v.created_at)}
+                  {v.author_name || t("common.unknown")} · {formatDateTime(v.created_at)}
                 </p>
               </div>
             ))
           ) : (
-            <EmptyState icon={History} title="Sürüm yok" description="Bu rapor için kayıtlı sürüm bulunmuyor." />
+            <EmptyState
+              icon={History}
+              title={t("versionHistory.empty")}
+              description={t("versionHistory.emptyDesc")}
+            />
           )}
         </div>
       </DialogContent>

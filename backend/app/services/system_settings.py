@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from uuid import UUID
 
 from sqlalchemy import select
@@ -6,19 +5,11 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.models import SystemSetting
+from app.services.branding import BRANDING_DEFINITIONS, validate_branding_updates
+from app.services.setting_definitions import SettingDefinition
 
 
 settings = get_settings()
-
-
-@dataclass(frozen=True)
-class SettingDefinition:
-    key: str
-    value: str
-    category: str
-    label: str
-    description: str
-    is_secret: bool = False
 
 
 DEFAULT_SETTINGS = [
@@ -70,6 +61,7 @@ DEFAULT_SETTINGS = [
     SettingDefinition("security.patient_data_key", "", "Güvenlik", "Hasta verisi şifreleme anahtarı", "Boş bırakılırsa audit HMAC secret türetilmiş anahtar kullanılır.", True),
     SettingDefinition("auth.ldap_group_attribute", settings.ldap_group_attribute, "Kimlik Doğrulama", "LDAP grup attribute", "Kullanıcının grup üyeliklerini okumak için LDAP attribute adı."),
     SettingDefinition("storage.recording_retention_days", "90", "Veri Saklama", "Ses ve rapor saklama günü", "Veritabanında tutulacak ses dosyası ve yapılandırılmış rapor kayıtlarının saklama süresi (gün)."),
+    *BRANDING_DEFINITIONS,
 ]
 
 
@@ -144,6 +136,10 @@ def list_grouped_settings(db: Session) -> list[dict]:
 
 def update_settings(db: Session, updates: dict[str, str], actor_user_id: UUID | None) -> dict[str, str]:
     ensure_system_settings(db)
+    try:
+        validate_branding_updates(updates)
+    except ValueError as exc:
+        raise KeyError(str(exc)) from exc
     known = {row.key: row for row in db.scalars(select(SystemSetting))}
     for key, value in updates.items():
         if key not in known:

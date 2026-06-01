@@ -1,5 +1,6 @@
 import axios, { AxiosError, type AxiosRequestConfig } from "axios";
 import type { TokenResponse } from "@/types/api";
+import { getStoredLocale, translateForLocale } from "@/features/i18n/locale-context";
 
 const STORAGE_KEYS = {
   tokenExpiresAt: "medarixTokenExpiresAt",
@@ -193,17 +194,17 @@ api.interceptors.response.use(
 
 export function apiErrorMessage(
   error: unknown,
-  fallback = "Medarix servisi bir sorunla karşılaştı",
+  fallback = translateForLocale(getStoredLocale(), "errors.fallback"),
 ): string {
   if (axios.isAxiosError(error)) {
     const detail = (error.response?.data as { detail?: unknown })?.detail;
     if (typeof detail === "string") return detail;
     if (error.response?.status === 503 || error.response?.status === 502)
-      return "Medarix yapay zekâ servisi şu anda kullanılamıyor.";
+      return translateForLocale(getStoredLocale(), "errors.aiUnavailable");
     if (error.response?.status === 403)
-      return "Erişim reddedildi — bu işlem için Medarix yetkisi gerekir.";
+      return translateForLocale(getStoredLocale(), "errors.forbidden");
     if (error.response?.status === 401)
-      return "Erişim reddedildi — Medarix kimlik doğrulaması gerekir.";
+      return translateForLocale(getStoredLocale(), "errors.unauthorized");
     return error.message || fallback;
   }
   return error instanceof Error ? error.message : fallback;

@@ -167,7 +167,10 @@ export function useUpdateSystemSettings() {
   return useMutation({
     mutationFn: async (settings: Record<string, string>) =>
       (await api.put("/admin/system-settings", { settings })).data,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "system-settings"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "system-settings"] });
+      qc.invalidateQueries({ queryKey: ["branding"] });
+    },
   });
 }
 

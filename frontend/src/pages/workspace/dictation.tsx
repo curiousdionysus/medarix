@@ -36,7 +36,8 @@ import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { apiErrorMessage } from "@/lib/api";
+import { useApiError } from "@/features/i18n/helpers";
+import { useT } from "@/features/i18n/locale-context";
 import { cn, formatDate } from "@/lib/utils";
 
 function fmtTime(ms: number) {
@@ -46,6 +47,8 @@ function fmtTime(ms: number) {
 }
 
 export default function DictationPage() {
+  const t = useT();
+  const apiErr = useApiError();
   const recorder = useRecorder();
   const transcribe = useTranscribe();
   const format = useFormatReport();
@@ -73,7 +76,9 @@ export default function DictationPage() {
     if (incoming && appliedStudyRef.current !== incoming.id) {
       appliedStudyRef.current = incoming.id;
       setStudy(incoming);
-      toast.success(`${incoming.patient_name || "Çalışma"} bağlandı`);
+      toast.success(
+        t("dictation.studyLinked", { name: incoming.patient_name || t("dictation.studyLinkedDefault") }),
+      );
     }
   }, [passedStudy, fetchedStudy]);
 
@@ -104,7 +109,7 @@ export default function DictationPage() {
     if (!file) return;
     const ok = await recorder.loadFile(file);
     if (ok) {
-      toast.success(`"${file.name}" yüklendi — Yazıya Dök ile transkribe edebilirsiniz`);
+      toast.success(t("dictation.fileUploaded", { name: file.name }));
     }
   };
 
@@ -117,15 +122,15 @@ export default function DictationPage() {
         studyId: study?.id,
       });
       setTranscript((prev) => (prev ? `${prev}\n${res.text}` : res.text));
-      toast.success("Ses başarıyla yazıya döküldü");
+      toast.success(t("dictation.transcribeSuccess"));
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Transkripsiyon başarısız"));
+      toast.error(apiErr(err, "dictation.transcribeFail"));
     }
   };
 
   const handleFormat = async () => {
     if (!transcript.trim()) {
-      toast.warning("Önce transkripsiyon oluşturun");
+      toast.warning(t("dictation.formatNeedTranscript"));
       return;
     }
     const tpl = templates?.find((t) => t.id === templateId);
@@ -137,26 +142,26 @@ export default function DictationPage() {
         studyId: study?.id ?? null,
       });
       setReport(res.report);
-      toast.success(study ? "Rapor oluşturuldu ve taslak olarak kaydedildi" : "Rapor oluşturuldu");
+      toast.success(study ? t("dictation.reportCreatedSaved") : t("dictation.reportCreated"));
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Rapor oluşturulamadı"));
+      toast.error(apiErr(err, "dictation.reportCreateFail"));
     }
   };
 
   const handleSaveToReports = async () => {
     if (!study) {
-      toast.warning("Önce İş Listesi'nden bir çalışma bağlayın");
+      toast.warning(t("dictation.linkStudyFirst"));
       return;
     }
     if (!report.trim()) {
-      toast.warning("Kaydedilecek rapor yok");
+      toast.warning(t("dictation.nothingToSave"));
       return;
     }
     try {
       await saveReport.mutateAsync({ content: report, transcript, status: "draft" });
-      toast.success("Rapor, Raporlar bölümüne taslak olarak kaydedildi");
+      toast.success(t("dictation.reportSaved"));
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Rapor kaydedilemedi"));
+      toast.error(apiErr(err, "dictation.reportSaveFail"));
     }
   };
 
@@ -171,13 +176,13 @@ export default function DictationPage() {
   return (
     <div className={cn("space-y-6", focusMode && "mx-auto max-w-4xl")}>
       <PageHeader
-        title="Rapor Diktasyonu"
-        description="Sesli kaydedin, yapay zeka ile yazıya dökün ve yapılandırılmış rapora dönüştürün."
+        title={t("dictation.title")}
+        description={t("dictation.description")}
         icon={<Mic className="size-5" />}
         actions={
           <Button variant="outline" size="sm" onClick={() => setFocusMode((v) => !v)}>
             {focusMode ? <Minimize2 /> : <Maximize2 />}
-            {focusMode ? "Normal Görünüm" : "Odak Modu"}
+            {focusMode ? t("dictation.normalView") : t("dictation.focusMode")}
           </Button>
         }
       />
@@ -189,24 +194,24 @@ export default function DictationPage() {
             <div className="flex items-center gap-3">
               <ModalityBadge modality={study.modality} />
               <div>
-                <p className="text-sm font-semibold">{study.patient_name || "İsimsiz hasta"}</p>
+                <p className="text-sm font-semibold">{study.patient_name || t("dictation.unnamedPatient")}</p>
                 <p className="text-xs text-muted-foreground">
                   {study.study_description || "—"} · {study.accession_number || "—"} · {formatDate(study.study_date)}
                 </p>
               </div>
-              <Button variant="ghost" size="icon-sm" onClick={clearLinkedStudy} aria-label="Bağlantıyı kaldır">
+              <Button variant="ghost" size="icon-sm" onClick={clearLinkedStudy} aria-label={t("dictation.unlinkStudy")}>
                 <Trash2 className="size-4" />
               </Button>
             </div>
           ) : (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <AlertCircle className="size-4" />
-              Çalışma bağlanmadı — İş Listesi'nden bir çalışma seçin.
+              {t("dictation.noStudyLinked")}
             </div>
           )}
           {!study && (
             <Button variant="outline" size="sm" onClick={() => navigate("/workspace/worklist")}>
-              <ListChecks /> İş Listesi
+              <ListChecks /> {t("dictation.worklist")}
             </Button>
           )}
         </CardContent>
@@ -218,7 +223,7 @@ export default function DictationPage() {
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <span className={cn("flex size-2.5 rounded-full", recording ? "animate-pulse bg-destructive" : "bg-muted-foreground/40")} />
-              Kayıt
+              {t("dictation.recording")}
             </CardTitle>
             <span className="font-mono text-lg font-semibold tabular-nums">{fmtTime(recorder.durationMs)}</span>
           </CardHeader>
@@ -246,7 +251,7 @@ export default function DictationPage() {
               {recorder.status === "idle" || recorder.status === "error" ? (
                 <>
                   <Button size="lg" onClick={recorder.start} className="gap-2">
-                    <Mic /> Kaydı Başlat
+                    <Mic /> {t("dictation.startRecording")}
                   </Button>
                   <Button
                     size="lg"
@@ -254,28 +259,28 @@ export default function DictationPage() {
                     className="gap-2"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <Upload /> Ses Dosyası Yükle
+                    <Upload /> {t("dictation.uploadAudio")}
                   </Button>
                 </>
               ) : (
                 <>
                   {recording ? (
                     <Button size="lg" variant="secondary" onClick={recorder.pause}>
-                      <Pause /> Duraklat
+                      <Pause /> {t("dictation.pause")}
                     </Button>
                   ) : paused ? (
                     <Button size="lg" variant="secondary" onClick={recorder.resume}>
-                      <Play /> Devam Et
+                      <Play /> {t("dictation.resumeLabel")}
                     </Button>
                   ) : null}
                   {(recording || paused) && (
                     <Button size="lg" variant="destructive" onClick={recorder.stop}>
-                      <Square /> Durdur
+                      <Square /> {t("dictation.stop")}
                     </Button>
                   )}
                   {hasAudio && (
                     <Button size="lg" variant="outline" onClick={resetAll}>
-                      <RotateCcw /> Sıfırla
+                      <RotateCcw /> {t("dictation.reset")}
                     </Button>
                   )}
                 </>
@@ -287,12 +292,12 @@ export default function DictationPage() {
                 <Settings2 className="size-4 shrink-0 text-muted-foreground" />
                 <Select value={recorder.deviceId ?? recorder.devices[0]?.deviceId} onValueChange={recorder.setDevice}>
                   <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="Mikrofon seç" />
+                    <SelectValue placeholder={t("dictation.micSelect")} />
                   </SelectTrigger>
                   <SelectContent>
                     {recorder.devices.map((d, i) => (
                       <SelectItem key={d.deviceId || i} value={d.deviceId || `mic-${i}`}>
-                        {d.label || `Mikrofon ${i + 1}`}
+                        {d.label || t("dictation.microphoneN", { n: String(i + 1) })}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -302,7 +307,7 @@ export default function DictationPage() {
 
             {recorder.sourceFilename && hasAudio && (
               <p className="truncate text-center text-xs text-muted-foreground">
-                Yüklenen dosya: <span className="font-medium text-foreground">{recorder.sourceFilename}</span>
+                {t("dictation.uploadedFile", { name: recorder.sourceFilename })}
               </p>
             )}
 
@@ -313,7 +318,7 @@ export default function DictationPage() {
             {hasAudio && (
               <Button className="w-full" onClick={handleTranscribe} disabled={transcribe.isPending}>
                 {transcribe.isPending ? <Spinner /> : <Sparkles />}
-                Yazıya Dök
+                {t("dictation.transcribe")}
               </Button>
             )}
           </CardContent>
@@ -322,27 +327,32 @@ export default function DictationPage() {
         {/* Transcript */}
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Transkripsiyon</CardTitle>
+            <CardTitle>{t("dictation.transcription")}</CardTitle>
             {transcript && <AiConfidenceChip value={confidence} />}
           </CardHeader>
           <CardContent className="space-y-3">
             <Textarea
               value={transcript}
               onChange={(e) => setTranscript(e.target.value)}
-              placeholder="Yazıya dökülen metin burada görünecek. Doğrudan düzenleyebilirsiniz…"
+              placeholder={t("dictation.transcriptPlaceholderLong")}
               className="min-h-40 font-mono text-sm"
             />
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                {transcript ? `${transcript.trim().split(/\s+/).length} kelime · ${countMedicalTerms(transcript)} tıbbi terim` : "Henüz metin yok"}
+                {transcript
+                  ? t("dictation.wordCount", {
+                      words: String(transcript.trim().split(/\s+/).length),
+                      terms: String(countMedicalTerms(transcript)),
+                    })
+                  : t("suggestions.empty")}
               </p>
               <div className="flex items-center gap-2">
                 <Select value={templateId} onValueChange={setTemplateId}>
                   <SelectTrigger className="h-8 w-44 text-xs">
-                    <SelectValue placeholder="Şablon (opsiyonel)" />
+                    <SelectValue placeholder={t("dictation.templateOptional")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Şablon yok</SelectItem>
+                    <SelectItem value="none">{t("dictation.noTemplate")}</SelectItem>
                     {templates?.map((t) => (
                       <SelectItem key={t.id} value={t.id}>
                         {t.modality} · {t.title}
@@ -354,10 +364,10 @@ export default function DictationPage() {
                   <TooltipTrigger asChild>
                     <Button onClick={handleFormat} disabled={format.isPending || !transcript.trim()}>
                       {format.isPending ? <Spinner /> : <Wand2 />}
-                      Yapılandır
+                      {t("dictation.format")}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>AI ile yapılandırılmış rapora dönüştür</TooltipContent>
+                  <TooltipContent>{t("dictation.formatTooltip")}</TooltipContent>
                 </Tooltip>
               </div>
             </div>
@@ -371,7 +381,7 @@ export default function DictationPage() {
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <FileText className="size-4 text-primary" />
-              Yapılandırılmış Rapor
+              {t("dictation.structuredReport")}
             </CardTitle>
             <div className="flex flex-wrap items-center gap-2">
               <Button
@@ -381,11 +391,11 @@ export default function DictationPage() {
                 disabled={saveReport.isPending || !report.trim()}
               >
                 {saveReport.isPending ? <Spinner /> : <Save />}
-                Raporlara Kaydet
+                {t("dictation.saveToReports")}
               </Button>
               {study && (
                 <Button size="sm" variant="secondary" onClick={() => navigate(`/workspace/reports/${study.id}`)}>
-                  Rapor Editöründe Aç
+                  {t("dictation.openInEditor")}
                 </Button>
               )}
             </div>
@@ -394,7 +404,7 @@ export default function DictationPage() {
             <Textarea
               value={report}
               onChange={(e) => setReport(e.target.value)}
-              placeholder="Yapılandırılmış rapor metni…"
+              placeholder={t("dictation.reportPlaceholder")}
               className="min-h-64 font-mono text-sm"
             />
           </CardContent>

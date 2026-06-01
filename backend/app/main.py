@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import admin, ai, analytics, auth, clinical, dicom, licensing, patients, recordings
+from app.api import admin, ai, analytics, auth, branding, clinical, dicom, licensing, patients, recordings
 from app.api.deps import get_current_user
 from app.core.config import get_settings
 from app.core.config_validation import validate_settings
@@ -42,6 +42,7 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "Accept", "Cookie"],
 )
 
+app.include_router(branding.router, prefix=settings.api_prefix)
 app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(clinical.router, prefix=settings.api_prefix)
 app.include_router(dicom.router, prefix=settings.api_prefix)

@@ -2,22 +2,20 @@ import * as React from "react";
 import { toast } from "sonner";
 import { Bot, Send, User as UserIcon, Sparkles, Trash2, Stethoscope } from "lucide-react";
 import { useAiAssistant, type AssistantMessage } from "@/features/ai/api";
+import { useApiError } from "@/features/i18n/helpers";
+import { useT } from "@/features/i18n/locale-context";
 import { PageHeader } from "@/components/shared/page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-const QUICK_PROMPTS = [
-  "Toraks BT için ayırıcı tanı listesi oluştur.",
-  "BI-RADS sınıflandırmasını özetle.",
-  "Akciğer nodülü takip protokolünü açıkla.",
-  "Bu bulgular için olası tanılar neler?",
-];
+const PROMPT_KEYS = ["assistant.prompt1", "assistant.prompt2", "assistant.prompt3", "assistant.prompt4"] as const;
 
 export default function AiAssistantPage() {
+  const t = useT();
+  const apiErr = useApiError();
   const assistant = useAiAssistant();
   const [messages, setMessages] = React.useState<AssistantMessage[]>([]);
   const [input, setInput] = React.useState("");
@@ -37,7 +35,7 @@ export default function AiAssistantPage() {
       const res = await assistant.mutateAsync({ messages: next });
       setMessages((prev) => [...prev, { role: "assistant", content: res.reply }]);
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Asistan yanıt veremedi"));
+      toast.error(apiErr(err, "assistant.fail"));
       setMessages((prev) => prev.slice(0, -1));
       setInput(trimmed);
     }
@@ -51,13 +49,13 @@ export default function AiAssistantPage() {
   return (
     <div className="flex h-[calc(100vh-7rem)] flex-col gap-4">
       <PageHeader
-        title="AI Asistan"
-        description="Radyolojiye özel karar destek asistanı."
+        title={t("assistant.title")}
+        description={t("assistant.descriptionShort")}
         icon={<Bot className="size-5" />}
         actions={
           messages.length > 0 ? (
             <Button variant="outline" size="sm" onClick={() => setMessages([])}>
-              <Trash2 /> Sohbeti Temizle
+              <Trash2 /> {t("assistant.clearChat")}
             </Button>
           ) : undefined
         }
@@ -71,21 +69,18 @@ export default function AiAssistantPage() {
                 <Stethoscope className="size-7" />
               </div>
               <div>
-                <p className="font-semibold">Medarix AI Asistan</p>
-                <p className="mx-auto max-w-md text-sm text-muted-foreground">
-                  Raporlama, terminoloji, ayırıcı tanı ve protokoller hakkında soru sorun. Bu asistan karar
-                  desteği sağlar; nihai değerlendirme uzmana aittir.
-                </p>
+                <p className="font-semibold">{t("assistant.titleChat")}</p>
+                <p className="mx-auto max-w-md text-sm text-muted-foreground">{t("assistant.introDesc")}</p>
               </div>
               <div className="grid w-full max-w-lg gap-2 sm:grid-cols-2">
-                {QUICK_PROMPTS.map((p) => (
+                {PROMPT_KEYS.map((key) => (
                   <button
-                    key={p}
-                    onClick={() => send(p)}
+                    key={key}
+                    onClick={() => send(t(key))}
                     className="rounded-lg border border-border p-3 text-left text-sm transition-colors hover:border-primary/50 hover:bg-secondary"
                   >
                     <Sparkles className="mb-1 size-4 text-accent" />
-                    {p}
+                    {t(key)}
                   </button>
                 ))}
               </div>
@@ -98,7 +93,7 @@ export default function AiAssistantPage() {
               <span className="flex size-8 items-center justify-center rounded-lg bg-primary/12 text-primary">
                 <Bot className="size-4" />
               </span>
-              <Spinner /> Yanıt hazırlanıyor…
+              <Spinner /> {t("assistant.thinking")}
             </div>
           )}
         </div>
@@ -114,10 +109,15 @@ export default function AiAssistantPage() {
                   send(input);
                 }
               }}
-              placeholder="Bir soru yazın… (Enter ile gönder, Shift+Enter ile yeni satır)"
+              placeholder={t("assistant.placeholder")}
               className="max-h-32 min-h-11 flex-1 resize-none"
             />
-            <Button type="submit" size="icon" className="size-11 shrink-0" disabled={assistant.isPending || !input.trim()}>
+            <Button
+              type="submit"
+              size="icon"
+              className="size-11 shrink-0"
+              disabled={assistant.isPending || !input.trim()}
+            >
               <Send className="size-5" />
             </Button>
           </div>

@@ -2,6 +2,9 @@ import * as React from "react";
 import { toast } from "sonner";
 import { LayoutTemplate, Plus, Trash2, FileText } from "lucide-react";
 import { useTemplates, useCreateTemplate, useDeleteTemplate } from "@/features/studies/api";
+import { getReportSections } from "@/features/i18n/report-sections";
+import { useApiError } from "@/features/i18n/helpers";
+import { useLocale, useT, type Locale } from "@/features/i18n/locale-context";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,29 +21,38 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { apiErrorMessage } from "@/lib/api";
-import { REPORT_SECTIONS } from "@/features/reports/sections";
 
-const STARTER = REPORT_SECTIONS.map((s) => `${s.heading}:\n`).join("\n");
+function starterContent(locale: Locale) {
+  return getReportSections(locale)
+    .map((s) => `${s.heading}:\n`)
+    .join("\n");
+}
 
 export default function TemplatesPage() {
+  const t = useT();
+  const { locale } = useLocale();
+  const apiErr = useApiError();
   const { data, isLoading } = useTemplates();
   const create = useCreateTemplate();
   const del = useDeleteTemplate();
   const [open, setOpen] = React.useState(false);
-  const [form, setForm] = React.useState({ modality: "CT", title: "", content: STARTER });
+  const [form, setForm] = React.useState({ modality: "CT", title: "", content: starterContent(locale) });
+
+  React.useEffect(() => {
+    setForm((f) => ({ ...f, content: starterContent(locale) }));
+  }, [locale]);
 
   const grouped = React.useMemo(() => {
     const g: Record<string, typeof data> = {};
-    (data ?? []).forEach((t) => {
-      (g[t.modality] = g[t.modality] ?? []).push(t);
+    (data ?? []).forEach((tpl) => {
+      (g[tpl.modality] = g[tpl.modality] ?? []).push(tpl);
     });
     return g;
   }, [data]);
 
   const submit = async () => {
     if (!form.title.trim() || !form.content.trim()) {
-      toast.warning("Başlık ve içerik gerekli");
+      toast.warning(t("templates.titleContentRequired"));
       return;
     }
     try {
@@ -49,54 +61,54 @@ export default function TemplatesPage() {
         title: form.title.trim(),
         content: form.content,
       });
-      toast.success("Şablon oluşturuldu");
+      toast.success(t("templates.created"));
       setOpen(false);
-      setForm({ modality: "CT", title: "", content: STARTER });
+      setForm({ modality: "CT", title: "", content: starterContent(locale) });
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Şablon oluşturulamadı"));
+      toast.error(apiErr(err, "templates.createFail"));
     }
   };
 
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Şablonlar"
-        description="Modaliteye göre yeniden kullanılabilir rapor şablonları."
+        title={t("templates.title")}
+        description={t("templates.reusableDesc")}
         icon={<LayoutTemplate className="size-5" />}
         actions={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
-                <Plus /> Yeni Şablon
+                <Plus /> {t("templates.newTemplate")}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Yeni Şablon</DialogTitle>
+                <DialogTitle>{t("templates.newTemplate")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="modality">Modalite</Label>
+                    <Label htmlFor="modality">{t("templates.modality")}</Label>
                     <Input
                       id="modality"
                       value={form.modality}
                       onChange={(e) => setForm((f) => ({ ...f, modality: e.target.value }))}
-                      placeholder="CT, MR, XR…"
+                      placeholder={t("templates.modalityPlaceholder")}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="title">Başlık</Label>
+                    <Label htmlFor="title">{t("templates.titleLabel")}</Label>
                     <Input
                       id="title"
                       value={form.title}
                       onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                      placeholder="Örn. Toraks BT"
+                      placeholder={t("templates.titlePlaceholder")}
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="content">İçerik</Label>
+                  <Label htmlFor="content">{t("templates.content")}</Label>
                   <Textarea
                     id="content"
                     value={form.content}
@@ -107,10 +119,10 @@ export default function TemplatesPage() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>
-                  İptal
+                  {t("common.cancel")}
                 </Button>
                 <Button onClick={submit} disabled={create.isPending}>
-                  Kaydet
+                  {t("common.save")}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -130,25 +142,29 @@ export default function TemplatesPage() {
             <div key={modality} className="space-y-3">
               <div className="flex items-center gap-2">
                 <ModalityBadge modality={modality} />
-                <span className="text-sm text-muted-foreground">{templates?.length} şablon</span>
+                <span className="text-sm text-muted-foreground">
+                  {t("templates.templatesCount", { count: String(templates?.length ?? 0) })}
+                </span>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {templates?.map((t) => (
-                  <Card key={t.id} className="flex flex-col">
+                {templates?.map((tpl) => (
+                  <Card key={tpl.id} className="flex flex-col">
                     <CardHeader className="flex-row items-start justify-between p-4">
-                      <CardTitle className="text-base">{t.title}</CardTitle>
+                      <CardTitle className="text-base">{tpl.title}</CardTitle>
                       <Button
                         variant="ghost"
                         size="icon-sm"
                         className="text-muted-foreground hover:text-destructive"
-                        onClick={() => del.mutate(t.id, { onSuccess: () => toast.success("Şablon silindi") })}
+                        onClick={() =>
+                          del.mutate(tpl.id, { onSuccess: () => toast.success(t("templates.deleted")) })
+                        }
                       >
                         <Trash2 className="size-4" />
                       </Button>
                     </CardHeader>
                     <CardContent className="flex-1 p-4 pt-0">
                       <pre className="line-clamp-6 whitespace-pre-wrap font-mono text-xs text-muted-foreground">
-                        {t.content}
+                        {tpl.content}
                       </pre>
                     </CardContent>
                   </Card>
@@ -160,11 +176,11 @@ export default function TemplatesPage() {
       ) : (
         <EmptyState
           icon={FileText}
-          title="Henüz şablon yok"
-          description="Tekrarlayan raporlarınız için bir şablon oluşturun."
+          title={t("templates.empty")}
+          description={t("templates.emptyDesc")}
           action={
             <Button onClick={() => setOpen(true)}>
-              <Plus /> İlk şablonu oluştur
+              <Plus /> {t("templates.firstTemplate")}
             </Button>
           }
         />

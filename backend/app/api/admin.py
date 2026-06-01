@@ -563,7 +563,10 @@ def put_system_settings(
     try:
         updated = update_settings(db, payload.settings, current_user.id)
     except KeyError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unknown setting: {exc.args[0]}") from exc
+        msg = str(exc.args[0]) if exc.args else "Invalid setting"
+        if msg.startswith("branding.") or "çok büyük" in msg:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg) from exc
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unknown setting: {msg}") from exc
 
     if "storage.recording_retention_days" in payload.settings:
         purge_expired_recordings(db)

@@ -1,17 +1,11 @@
 import * as React from "react";
 import { Search, X } from "lucide-react";
 import type { StudyFilters } from "./api";
+import { useT } from "@/features/i18n/locale-context";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const MODALITIES = ["CT", "MR", "XR", "US", "MG", "NM"];
-
-const DATE_PRESETS = [
-  { id: "1d", label: "Bugün", days: 0 },
-  { id: "3d", label: "Son 3 gün", days: 2 },
-  { id: "1w", label: "Son hafta", days: 6 },
-  { id: "1m", label: "Son ay", days: 29 },
-] as const;
 
 function toISODate(d: Date): string {
   const tz = d.getTimezoneOffset() * 60000;
@@ -64,7 +58,18 @@ function Field({
 }
 
 export function StudyFilterBar({ value, onChange }: Props) {
+  const t = useT();
   const [draft, setDraft] = React.useState<Draft>(() => toDraft(value));
+
+  const DATE_PRESETS = React.useMemo(
+    () => [
+      { id: "1d", label: t("filter.today"), days: 0 },
+      { id: "3d", label: t("filter.last3Days"), days: 2 },
+      { id: "1w", label: t("filter.lastWeek"), days: 6 },
+      { id: "1m", label: t("filter.lastMonth"), days: 29 },
+    ],
+    [t],
+  );
 
   const set = <K extends keyof Draft>(key: K, val: Draft[K]) =>
     setDraft((d) => ({ ...d, [key]: val }));
@@ -117,7 +122,7 @@ export function StudyFilterBar({ value, onChange }: Props) {
       if (toISODate(f) === draft.from_date) return p.id;
     }
     return null;
-  }, [draft.from_date, draft.to_date]);
+  }, [draft.from_date, draft.to_date, DATE_PRESETS]);
 
   const clear = () => {
     setDraft(toDraft({ limit: value.limit }));
@@ -146,37 +151,35 @@ export function StudyFilterBar({ value, onChange }: Props) {
       className="overflow-hidden rounded-xl border border-border bg-card"
       onKeyDown={onKeyDown}
     >
-      {/* Primary identity fields */}
       <div className="flex flex-col divide-y divide-border sm:flex-row sm:divide-x sm:divide-y-0">
         <Field
-          label="TC Kimlik No"
+          label={t("filter.nationalId")}
           inputMode="numeric"
           maxLength={11}
           value={draft.patient_tc}
           onChange={(e) => set("patient_tc", e.target.value.replace(/\D/g, ""))}
-          placeholder="11 hane"
+          placeholder={t("filter.idPlaceholder")}
         />
         <Field
-          label="Ad"
+          label={t("filter.firstName")}
           value={draft.first_name}
           onChange={(e) => set("first_name", e.target.value)}
-          placeholder="Hasta adı"
+          placeholder={t("filter.firstNamePlaceholder")}
         />
         <Field
-          label="Soyad"
+          label={t("filter.lastName")}
           value={draft.last_name}
           onChange={(e) => set("last_name", e.target.value)}
-          placeholder="Hasta soyadı"
+          placeholder={t("filter.lastNamePlaceholder")}
         />
         <Field
-          label="Accession"
+          label={t("filter.accession")}
           value={draft.accession_number}
           onChange={(e) => set("accession_number", e.target.value)}
-          placeholder="Erişim no"
+          placeholder={t("filter.accessionPlaceholder")}
         />
       </div>
 
-      {/* Secondary filters + actions */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border bg-muted/30 px-3 py-2">
         <div className="flex flex-wrap items-center gap-1">
           {DATE_PRESETS.map((p) => (
@@ -238,11 +241,11 @@ export function StudyFilterBar({ value, onChange }: Props) {
         <div className="ml-auto flex items-center gap-2">
           {hasDraft && (
             <Button variant="ghost" size="sm" onClick={clear} className="h-8 px-2 text-xs">
-              <X /> Temizle
+              <X /> {t("filter.clear")}
             </Button>
           )}
           <Button size="sm" onClick={search} className="h-8">
-            <Search /> Ara
+            <Search /> {t("filter.search")}
           </Button>
         </div>
       </div>

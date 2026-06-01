@@ -8,7 +8,8 @@ import {
   usePermissionCatalog,
   useUpdateRole,
 } from "@/features/admin/api";
-import { apiErrorMessage } from "@/lib/api";
+import { useApiError } from "@/features/i18n/helpers";
+import { useT } from "@/features/i18n/locale-context";
 import { cn } from "@/lib/utils";
 import type { AdminRoleOut, PermissionGroup } from "@/types/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -97,6 +98,8 @@ function PermissionMatrix({
 }
 
 export function RolesTab() {
+  const t = useT();
+  const apiErr = useApiError();
   const { data: roles, isLoading } = useAdminRoles();
   const { data: catalog } = usePermissionCatalog();
   const create = useCreateRole();
@@ -125,11 +128,11 @@ export function RolesTab() {
 
   const submitCreate = async () => {
     if (!formLabel.trim()) {
-      toast.warning("Rol adı gerekli");
+      toast.warning(t("roles.roleNameRequired"));
       return;
     }
     if (formPerms.size === 0) {
-      toast.warning("En az bir yetki seçin");
+      toast.warning(t("roles.permissionRequired"));
       return;
     }
     try {
@@ -138,10 +141,10 @@ export function RolesTab() {
         description: formDesc.trim() || undefined,
         permissions: [...formPerms],
       });
-      toast.success("Rol oluşturuldu");
+      toast.success(t("roles.roleCreated"));
       setCreateOpen(false);
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Rol oluşturulamadı"));
+      toast.error(apiErr(err, "roles.roleCreateFail"));
     }
   };
 
@@ -154,20 +157,20 @@ export function RolesTab() {
         description: formDesc.trim() || undefined,
         permissions: [...formPerms],
       });
-      toast.success("Rol güncellendi");
+      toast.success(t("roles.roleUpdated"));
       setEditRole(null);
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Rol güncellenemedi"));
+      toast.error(apiErr(err, "roles.roleUpdateFail"));
     }
   };
 
   const handleDelete = async (role: AdminRoleOut) => {
-    if (!window.confirm(`"${role.label}" rolünü silmek istediğinize emin misiniz?`)) return;
+    if (!window.confirm(t("roles.deleteRoleConfirm", { name: role.label }))) return;
     try {
       await remove.mutateAsync(role.id);
-      toast.success("Rol silindi");
+      toast.success(t("roles.roleDeleted"));
     } catch (err) {
-      toast.error(apiErrorMessage(err, "Rol silinemedi"));
+      toast.error(apiErr(err, "roles.roleDeleteFail"));
     }
   };
 
@@ -179,41 +182,42 @@ export function RolesTab() {
         <CardHeader className="flex-row items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="size-5" /> Roller
+              <Shield className="size-5" /> {t("roles.tabTitle")}
             </CardTitle>
-            <CardDescription>
-              Yerleşik roller (Görüntüleyici, Raportör, Radyolog, Admin) sistem tarafından tanımlıdır. Özel roller
-              ekleyebilirsiniz.
-            </CardDescription>
+            <CardDescription>{t("roles.tabDesc")}</CardDescription>
           </div>
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
               <Button size="sm" onClick={openCreate}>
-                <Plus /> Özel Rol
+                <Plus /> {t("roles.customRole")}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Yeni Özel Rol</DialogTitle>
+                <DialogTitle>{t("roles.newCustomRole")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label>Rol adı</Label>
-                  <Input value={formLabel} onChange={(e) => setFormLabel(e.target.value)} placeholder="Örn. Süpervizör" />
+                  <Label>{t("roles.roleName")}</Label>
+                  <Input
+                    value={formLabel}
+                    onChange={(e) => setFormLabel(e.target.value)}
+                    placeholder={t("roles.placeholderLabel")}
+                  />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Açıklama</Label>
+                  <Label>{t("admin.groupDesc")}</Label>
                   <Input value={formDesc} onChange={(e) => setFormDesc(e.target.value)} />
                 </div>
-                <Label>Yetkiler</Label>
+                <Label>{t("roles.permissions")}</Label>
                 <PermissionMatrix catalog={catalog} selected={formPerms} onChange={setFormPerms} />
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setCreateOpen(false)}>
-                  İptal
+                  {t("common.cancel")}
                 </Button>
                 <Button onClick={submitCreate} disabled={create.isPending}>
-                  Oluştur
+                  {t("admin.create")}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -244,12 +248,12 @@ export function RolesTab() {
                       </Badge>
                       {role.is_builtin ? (
                         <Badge variant="secondary">
-                          <Lock className="size-3" /> Yerleşik
+                          <Lock className="size-3" /> {t("roles.builtin")}
                         </Badge>
                       ) : (
-                        <Badge variant="outline">Özel</Badge>
+                        <Badge variant="outline">{t("roles.custom")}</Badge>
                       )}
-                      <Badge variant="muted">{role.user_count} kullanıcı</Badge>
+                      <Badge variant="muted">{t("roles.usersCount", { count: String(role.user_count) })}</Badge>
                     </div>
                     {role.description && <p className="text-sm text-muted-foreground">{role.description}</p>}
                     <div className="flex flex-wrap gap-1">
@@ -267,7 +271,7 @@ export function RolesTab() {
                     {!role.is_builtin && (
                       <>
                         <Button variant="outline" size="sm" onClick={() => openEdit(role)}>
-                          Düzenle
+                          {t("common.edit")}
                         </Button>
                         <Button
                           variant="ghost"
@@ -291,26 +295,26 @@ export function RolesTab() {
       <Dialog open={!!editRole} onOpenChange={(o) => !o && setEditRole(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Rol Düzenle — {editRole?.label}</DialogTitle>
+            <DialogTitle>{t("roles.editRole", { name: editRole?.label ?? "" })}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Rol adı</Label>
+              <Label>{t("roles.roleName")}</Label>
               <Input value={formLabel} onChange={(e) => setFormLabel(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Açıklama</Label>
+              <Label>{t("admin.groupDesc")}</Label>
               <Input value={formDesc} onChange={(e) => setFormDesc(e.target.value)} />
             </div>
-            <Label>Yetkiler</Label>
+            <Label>{t("roles.permissions")}</Label>
             <PermissionMatrix catalog={catalog} selected={formPerms} onChange={setFormPerms} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditRole(null)}>
-              İptal
+              {t("common.cancel")}
             </Button>
             <Button onClick={submitEdit} disabled={update.isPending}>
-              Kaydet
+              {t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>

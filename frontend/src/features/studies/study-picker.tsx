@@ -2,6 +2,7 @@ import * as React from "react";
 import { Search, FileSearch, X } from "lucide-react";
 import { useStudies } from "./api";
 import type { StudyOut } from "@/types/api";
+import { useT } from "@/features/i18n/locale-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function StudyPicker({ onSelect, trigger }: Props) {
+  const t = useT();
   const [open, setOpen] = React.useState(false);
   const [term, setTerm] = React.useState("");
   const [query, setQuery] = React.useState("");
@@ -39,13 +41,13 @@ export function StudyPicker({ onSelect, trigger }: Props) {
         {trigger ?? (
           <Button variant="outline" size="sm">
             <FileSearch />
-            Çalışma Bağla
+            {t("studyPicker.linkStudy")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Çalışma Seç</DialogTitle>
+          <DialogTitle>{t("studyPicker.selectStudy")}</DialogTitle>
         </DialogHeader>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -53,7 +55,7 @@ export function StudyPicker({ onSelect, trigger }: Props) {
             autoFocus
             value={term}
             onChange={(e) => setTerm(e.target.value)}
-            placeholder="Hasta soyadı ile ara…"
+            placeholder={t("studyPicker.searchPlaceholder")}
             className="pl-9"
           />
           {term && (
@@ -78,16 +80,20 @@ export function StudyPicker({ onSelect, trigger }: Props) {
               >
                 <ModalityBadge modality={study.modality} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{study.patient_name || "İsimsiz hasta"}</p>
+                  <p className="truncate text-sm font-semibold">{study.patient_name || t("common.unnamedPatient")}</p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {study.study_description || "Açıklama yok"} · {study.accession_number || "—"}
+                    {study.study_description || t("common.noDescription")} · {study.accession_number || "—"}
                   </p>
                 </div>
                 <span className="shrink-0 text-xs text-muted-foreground">{formatDate(study.study_date)}</span>
               </button>
             ))
           ) : (
-            <EmptyState icon={FileSearch} title="Çalışma bulunamadı" description="Arama kriterlerinizi değiştirin." />
+            <EmptyState
+              icon={FileSearch}
+              title={t("studyPicker.notFound")}
+              description={t("admin.noAuditMatchDesc")}
+            />
           )}
         </div>
       </DialogContent>

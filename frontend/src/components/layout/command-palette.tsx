@@ -11,6 +11,7 @@ import {
 import { NAV_SECTIONS } from "@/config/navigation";
 import { useAuth } from "@/features/auth/auth-context";
 import { useIsEnterprise } from "@/features/license/api";
+import { useT } from "@/features/i18n/locale-context";
 import { useTheme } from "@/features/theme/theme-context";
 import { Moon, Sun, LogOut } from "lucide-react";
 
@@ -24,6 +25,7 @@ export function CommandPalette({ open, onOpenChange }: Props) {
   const { hasRole, logout } = useAuth();
   const isEnterprise = useIsEnterprise();
   const { toggle } = useTheme();
+  const t = useT();
 
   const go = React.useCallback(
     (to: string) => {
@@ -39,20 +41,20 @@ export function CommandPalette({ open, onOpenChange }: Props) {
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder="Sayfalara git veya komut çalıştır…" />
+      <CommandInput placeholder={t("command.placeholder")} />
       <CommandList>
-        <CommandEmpty>Sonuç bulunamadı.</CommandEmpty>
-        <CommandGroup heading="Gezinme">
+        <CommandEmpty>{t("command.empty")}</CommandEmpty>
+        <CommandGroup heading={t("command.nav")}>
           {navItems.map((item) => (
-            <CommandItem key={item.to} value={item.label} onSelect={() => go(item.to)}>
+            <CommandItem key={item.to} value={t(item.labelKey)} onSelect={() => go(item.to)}>
               <item.icon />
-              {item.label}
+              {t(item.labelKey)}
             </CommandItem>
           ))}
         </CommandGroup>
-        <CommandGroup heading="Eylemler">
+        <CommandGroup heading={t("command.actions")}>
           <CommandItem
-            value="tema değiştir"
+            value={t("command.toggleTheme")}
             onSelect={() => {
               toggle();
               onOpenChange(false);
@@ -60,17 +62,17 @@ export function CommandPalette({ open, onOpenChange }: Props) {
           >
             <Sun className="dark:hidden" />
             <Moon className="hidden dark:block" />
-            Temayı değiştir
+            {t("command.toggleTheme")}
           </CommandItem>
           <CommandItem
-            value="çıkış yap"
+            value={t("command.logout")}
             onSelect={() => {
               onOpenChange(false);
               logout();
             }}
           >
             <LogOut />
-            Çıkış yap
+            {t("command.logout")}
           </CommandItem>
         </CommandGroup>
       </CommandList>

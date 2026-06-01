@@ -1,5 +1,6 @@
 import * as React from "react";
 import { SkipBack, SkipForward, Play, Pause, Rewind, FastForward } from "lucide-react";
+import { useT } from "@/features/i18n/locale-context";
 import { Button } from "@/components/ui/button";
 
 function fmt(s: number) {
@@ -11,13 +12,13 @@ function fmt(s: number) {
 
 interface Props {
   blob: Blob;
-  /** Accurate recorded duration in ms, used when the media metadata reports Infinity (common for MediaRecorder webm). */
   fallbackDurationMs?: number;
 }
 
-const SKIP = 5; // seconds
+const SKIP = 5;
 
 export function PlaybackTransport({ blob, fallbackDurationMs }: Props) {
+  const t = useT();
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = React.useState(false);
   const [current, setCurrent] = React.useState(0);
@@ -34,7 +35,6 @@ export function PlaybackTransport({ blob, fallbackDurationMs }: Props) {
     const a = audioRef.current;
     if (!a) return;
     if (!isFinite(a.duration) || a.duration === 0) {
-      // Force the browser to compute the real duration for MediaRecorder blobs.
       fixingDuration.current = true;
       a.currentTime = 1e101;
     } else {
@@ -67,18 +67,13 @@ export function PlaybackTransport({ blob, fallbackDurationMs }: Props) {
     }
   };
 
-  const seekTo = (t: number) => {
+  const seekTo = (time: number) => {
     const a = audioRef.current;
     if (!a) return;
-    const clamped = Math.max(0, Math.min(totalDuration || a.duration || t, t));
+    const clamped = Math.max(0, Math.min(totalDuration || a.duration || time, time));
     a.currentTime = clamped;
     setCurrent(clamped);
   };
-
-  const rewind = () => seekTo(current - SKIP);
-  const forward = () => seekTo(current + SKIP);
-  const toStart = () => seekTo(0);
-  const toEnd = () => seekTo(totalDuration);
 
   return (
     <div className="space-y-2 rounded-xl border border-border bg-muted/30 p-3">
@@ -95,19 +90,19 @@ export function PlaybackTransport({ blob, fallbackDurationMs }: Props) {
       />
 
       <div className="flex items-center justify-center gap-1.5">
-        <Button variant="outline" size="icon-sm" onClick={toStart} aria-label="Başa sar" title="Başa sar">
+        <Button variant="outline" size="icon-sm" onClick={() => seekTo(0)} aria-label={t("playback.seekStart")} title={t("playback.seekStart")}>
           <SkipBack />
         </Button>
-        <Button variant="outline" size="icon-sm" onClick={rewind} aria-label="Geri sar" title="5 sn geri">
+        <Button variant="outline" size="icon-sm" onClick={() => seekTo(current - SKIP)} aria-label={t("playback.back5s")} title={t("playback.back5s")}>
           <Rewind />
         </Button>
-        <Button size="icon" onClick={togglePlay} aria-label={playing ? "Duraklat" : "Oynat"}>
+        <Button size="icon" onClick={togglePlay} aria-label={playing ? t("playback.pause") : t("playback.play")}>
           {playing ? <Pause /> : <Play />}
         </Button>
-        <Button variant="outline" size="icon-sm" onClick={forward} aria-label="İleri sar" title="5 sn ileri">
+        <Button variant="outline" size="icon-sm" onClick={() => seekTo(current + SKIP)} aria-label={t("playback.forward")} title={t("playback.forward")}>
           <FastForward />
         </Button>
-        <Button variant="outline" size="icon-sm" onClick={toEnd} aria-label="Sona sar" title="Sona sar">
+        <Button variant="outline" size="icon-sm" onClick={() => seekTo(totalDuration)} aria-label={t("playback.toEnd")} title={t("playback.toEnd")}>
           <SkipForward />
         </Button>
       </div>
@@ -124,7 +119,7 @@ export function PlaybackTransport({ blob, fallbackDurationMs }: Props) {
           value={Math.min(current, totalDuration || 0)}
           onChange={(e) => seekTo(Number(e.target.value))}
           className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-border accent-primary"
-          aria-label="Kayıt konumu"
+          aria-label={t("playback.position")}
         />
         <span className="w-10 font-mono text-[11px] tabular-nums text-muted-foreground">
           {fmt(totalDuration)}

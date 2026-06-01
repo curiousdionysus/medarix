@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { BarChart3, FileText, CheckCircle2, Timer, Sparkles, Mic, Users } from "lucide-react";
 import { useKpis, useProductivity, useTrends, useDashboard } from "@/features/analytics/api";
+import { useLocale, useT } from "@/features/i18n/locale-context";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -24,12 +25,12 @@ import { Button } from "@/components/ui/button";
 import { formatDuration, initials } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
-const RANGES = [
-  { days: 7, label: "7 Gün" },
-  { days: 14, label: "14 Gün" },
-  { days: 30, label: "30 Gün" },
-  { days: 90, label: "90 Gün" },
-];
+const RANGE_KEYS = [
+  { days: 7, labelKey: "analytics.range7" },
+  { days: 14, labelKey: "analytics.range14" },
+  { days: 30, labelKey: "analytics.range30" },
+  { days: 90, labelKey: "analytics.range90" },
+] as const;
 
 const PIE_COLORS = [
   "hsl(var(--chart-1))",
@@ -48,26 +49,29 @@ const tooltipStyle = {
 };
 
 export default function AnalyticsPage() {
+  const t = useT();
+  const { locale } = useLocale();
   const [days, setDays] = React.useState(30);
   const kpis = useKpis(days);
   const productivity = useProductivity(days);
   const trends = useTrends(days > 30 ? 30 : days);
   const dashboard = useDashboard();
 
+  const dateLocale = locale === "tr" ? "tr-TR" : "en-US";
   const trendData = (trends.data ?? []).map((d) => ({
     ...d,
-    label: new Date(d.date).toLocaleDateString("tr-TR", { day: "2-digit", month: "2-digit" }),
+    label: new Date(d.date).toLocaleDateString(dateLocale, { day: "2-digit", month: "2-digit" }),
   }));
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Analitik"
-        description="Üretkenlik, dönüş süresi, AI kullanımı ve departman performansı."
+        title={t("analytics.title")}
+        description={t("analytics.description")}
         icon={<BarChart3 className="size-5" />}
         actions={
           <div className="flex rounded-lg border border-border p-0.5">
-            {RANGES.map((r) => (
+            {RANGE_KEYS.map((r) => (
               <Button
                 key={r.days}
                 variant={days === r.days ? "secondary" : "ghost"}
@@ -75,7 +79,7 @@ export default function AnalyticsPage() {
                 className={cn("h-7 px-3 text-xs", days === r.days && "shadow-sm")}
                 onClick={() => setDays(r.days)}
               >
-                {r.label}
+                {t(r.labelKey)}
               </Button>
             ))}
           </div>
@@ -83,19 +87,55 @@ export default function AnalyticsPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <StatCard label="Toplam Rapor" value={kpis.data?.total_reports ?? 0} icon={FileText} tone="primary" loading={kpis.isLoading} />
-        <StatCard label="İmzalama Oranı" value={`%${kpis.data?.signed_rate ?? 0}`} icon={CheckCircle2} tone="success" loading={kpis.isLoading} />
-        <StatCard label="Ort. Dönüş Süresi" value={formatDuration(kpis.data?.avg_turnaround_minutes)} icon={Timer} tone="warning" loading={kpis.isLoading} />
-        <StatCard label="AI Kullanımı" value={kpis.data?.ai_usage_count ?? 0} icon={Sparkles} tone="accent" loading={kpis.isLoading} />
-        <StatCard label="Transkripsiyonlar" value={kpis.data?.transcriptions ?? 0} icon={Mic} tone="info" loading={kpis.isLoading} />
-        <StatCard label="Aktif Radyolog" value={kpis.data?.active_radiologists ?? 0} icon={Users} tone="primary" loading={kpis.isLoading} />
+        <StatCard
+          label={t("analytics.totalReports")}
+          value={kpis.data?.total_reports ?? 0}
+          icon={FileText}
+          tone="primary"
+          loading={kpis.isLoading}
+        />
+        <StatCard
+          label={t("analytics.signRate")}
+          value={`%${kpis.data?.signed_rate ?? 0}`}
+          icon={CheckCircle2}
+          tone="success"
+          loading={kpis.isLoading}
+        />
+        <StatCard
+          label={t("analytics.avgTurnaround")}
+          value={formatDuration(kpis.data?.avg_turnaround_minutes)}
+          icon={Timer}
+          tone="warning"
+          loading={kpis.isLoading}
+        />
+        <StatCard
+          label={t("analytics.aiUsage")}
+          value={kpis.data?.ai_usage_count ?? 0}
+          icon={Sparkles}
+          tone="accent"
+          loading={kpis.isLoading}
+        />
+        <StatCard
+          label={t("analytics.transcriptions")}
+          value={kpis.data?.transcriptions ?? 0}
+          icon={Mic}
+          tone="info"
+          loading={kpis.isLoading}
+        />
+        <StatCard
+          label={t("analytics.activeRadiologists")}
+          value={kpis.data?.active_radiologists ?? 0}
+          icon={Users}
+          tone="primary"
+          loading={kpis.isLoading}
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Aktivite Trendi</CardTitle>
-            <p className="text-sm text-muted-foreground">Rapor, imza ve transkripsiyon hacmi</p>
+            <CardTitle>{t("analytics.activityTrend")}</CardTitle>
+            <p className="text-sm text-muted-foreground">{t("analytics.trendSubtitle")}</p>
           </CardHeader>
           <CardContent>
             {trends.isLoading ? (
@@ -104,12 +144,46 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height={288}>
                 <LineChart data={trendData} margin={{ left: -20, right: 8, top: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                  <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} stroke="hsl(var(--muted-foreground))" width={32} />
+                  <XAxis
+                    dataKey="label"
+                    tickLine={false}
+                    axisLine={false}
+                    fontSize={12}
+                    stroke="hsl(var(--muted-foreground))"
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tickLine={false}
+                    axisLine={false}
+                    fontSize={12}
+                    stroke="hsl(var(--muted-foreground))"
+                    width={32}
+                  />
                   <RTooltip contentStyle={tooltipStyle} />
-                  <Line type="monotone" dataKey="reports" name="Rapor" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="signed" name="İmza" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="transcriptions" name="Transkripsiyon" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+                  <Line
+                    type="monotone"
+                    dataKey="reports"
+                    name={t("analytics.seriesReport")}
+                    stroke="hsl(var(--chart-1))"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="signed"
+                    name={t("analytics.seriesSign")}
+                    stroke="hsl(var(--chart-3))"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="transcriptions"
+                    name={t("analytics.seriesTranscribe")}
+                    stroke="hsl(var(--chart-2))"
+                    strokeWidth={2}
+                    dot={false}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             )}
@@ -118,7 +192,7 @@ export default function AnalyticsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Modalite Dağılımı</CardTitle>
+            <CardTitle>{t("analytics.modalityDist")}</CardTitle>
           </CardHeader>
           <CardContent>
             {dashboard.isLoading ? (
@@ -142,7 +216,7 @@ export default function AnalyticsPage() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <p className="py-16 text-center text-sm text-muted-foreground">Veri yok</p>
+              <p className="py-16 text-center text-sm text-muted-foreground">{t("analytics.noData")}</p>
             )}
           </CardContent>
         </Card>
@@ -150,8 +224,8 @@ export default function AnalyticsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Radyolog Üretkenliği</CardTitle>
-          <p className="text-sm text-muted-foreground">Son {days} gün</p>
+          <CardTitle>{t("analytics.radiologistProductivity")}</CardTitle>
+          <p className="text-sm text-muted-foreground">{t("analytics.productivityDays", { days: String(days) })}</p>
         </CardHeader>
         <CardContent>
           {productivity.isLoading ? (
@@ -164,11 +238,11 @@ export default function AnalyticsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Radyolog</TableHead>
-                  <TableHead className="text-right">Oluşturulan</TableHead>
-                  <TableHead className="text-right">İmzalanan</TableHead>
-                  <TableHead className="text-right">Ort. Dönüş</TableHead>
-                  <TableHead className="text-right">AI Kullanımı</TableHead>
+                  <TableHead>{t("roles.radiologist")}</TableHead>
+                  <TableHead className="text-right">{t("analytics.created")}</TableHead>
+                  <TableHead className="text-right">{t("analytics.signedCol")}</TableHead>
+                  <TableHead className="text-right">{t("analytics.avgTurnaroundCol")}</TableHead>
+                  <TableHead className="text-right">{t("analytics.aiUsage")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -184,14 +258,21 @@ export default function AnalyticsPage() {
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{row.reports_created}</TableCell>
                     <TableCell className="text-right tabular-nums">{row.reports_signed}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatDuration(row.avg_turnaround_minutes)}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatDuration(row.avg_turnaround_minutes)}
+                    </TableCell>
                     <TableCell className="text-right tabular-nums">{row.ai_formats}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           ) : (
-            <EmptyState className="border-0" icon={Users} title="Veri yok" description="Bu dönemde üretkenlik verisi bulunmuyor." />
+            <EmptyState
+              className="border-0"
+              icon={Users}
+              title={t("analytics.noData")}
+              description={t("analytics.noProductivity")}
+            />
           )}
         </CardContent>
       </Card>
