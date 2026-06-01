@@ -35,12 +35,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = React.useCallback(() => {
     void logoutSession().finally(() => {
       setUser(null);
+      window.location.replace("/login");
     });
   }, []);
 
   React.useEffect(() => {
     setUnauthorizedHandler(() => {
       setUser(null);
+      window.location.replace("/login");
     });
   }, []);
 

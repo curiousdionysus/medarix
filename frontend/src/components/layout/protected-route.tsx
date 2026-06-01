@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { ShieldAlert, Rocket } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-context";
 import { useIsEnterprise } from "@/features/license/api";
@@ -11,8 +11,11 @@ import type { RoleSlug } from "@/types/api";
 
 export function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: RoleSlug[] }) {
   const { loading, user } = useAuth();
+  const location = useLocation();
   if (loading) return <FullScreenLoader />;
-  if (!user) return null;
+  if (!user) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
   if (roles && !roles.some((r) => user.roles?.includes(r))) {
     return <RoleGuardDenied />;
   }
