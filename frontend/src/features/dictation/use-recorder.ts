@@ -2,9 +2,12 @@ import * as React from "react";
 
 export type RecorderStatus = "idle" | "requesting" | "recording" | "paused" | "stopped" | "error";
 
+export type MicErrorCode = "denied" | "not_found" | "in_use" | "insecure" | "unsupported" | "generic";
+
 export interface RecorderState {
   status: RecorderStatus;
   error: string | null;
+  errorCode: MicErrorCode | null;
   durationMs: number;
   level: number; // 0..1 instantaneous amplitude
   devices: MediaDeviceInfo[];
@@ -30,8 +33,48 @@ const AUDIO_EXT = /\.(wav|mp3|m4a|ogg|webm|flac|aac|wma|opus|mp4|mpeg)$/i;
 
 function isLikelyAudio(file: File): boolean {
   if (file.type.startsWith("audio/")) return true;
-  if (file.type === "video/webm") return true;
+  if (file.type === "video/webm" || file.type === "video/mp4" || file.type === "video/quicktime") {
+    return true;
+  }
   return AUDIO_EXT.test(file.name);
+}
+
+function isPlaceholderDeviceId(id: string | null | undefined): boolean {
+  return !id || id.startsWith("mic-");
+}
+
+function micErrorCodeFromException(err: unknown): MicErrorCode {
+  if (!(err instanceof DOMException)) return "generic";
+  switch (err.name) {
+    case "NotAllowedError":
+    case "PermissionDeniedError":
+      return "denied";
+    case "NotFoundError":
+    case "OverconstrainedError":
+      return "not_found";
+    case "NotReadableError":
+      return "in_use";
+    case "SecurityError":
+      return "insecure";
+    default:
+      return "generic";
+  }
+}
+
+function buildAudioConstraints(deviceId: string | null): MediaTrackConstraints {
+  const base: MediaTrackConstraints = { noiseSuppression: true, echoCancellation: true };
+  if (!deviceId || isPlaceholderDeviceId(deviceId)) return base;
+  return { ...base, deviceId: { ideal: deviceId } };
+}
+
+function pickRecorderMimeType(): string {
+  const candidates = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4",
+    "audio/ogg;codecs=opus",
+  ];
+  return candidates.find((t) => MediaRecorder.isTypeSupported(t)) ?? "audio/webm";
 }
 
 function probeDurationMs(file: File): Promise<number> {
@@ -62,6 +105,7 @@ function probeDurationMs(file: File): Promise<number> {
 export function useRecorder(): UseRecorderResult {
   const [status, setStatus] = React.useState<RecorderStatus>("idle");
   const [error, setError] = React.useState<string | null>(null);
+  const [errorCode, setErrorCode] = React.useState<MicErrorCode | null>(null);
   const [durationMs, setDurationMs] = React.useState(0);
   const [level, setLevel] = React.useState(0);
   const [devices, setDevices] = React.useState<MediaDeviceInfo[]>([]);
@@ -70,6 +114,7 @@ export function useRecorder(): UseRecorderResult {
   const [sourceFilename, setSourceFilename] = React.useState<string | null>(null);
 
   const mediaRecorder = React.useRef<MediaRecorder | null>(null);
+  const recorderMimeType = React.useRef("audio/webm");
   const stream = React.useRef<MediaStream | null>(null);
   const chunks = React.useRef<Blob[]>([]);
   const audioCtx = React.useRef<AudioContext | null>(null);
@@ -77,6 +122,16 @@ export function useRecorder(): UseRecorderResult {
   const raf = React.useRef<number | null>(null);
   const startTs = React.useRef<number>(0);
   const accumulated = React.useRef<number>(0);
+
+  const setMicError = React.useCallback((code: MicErrorCode) => {
+    setErrorCode(code);
+    setError(code);
+  }, []);
+
+  const clearMicError = React.useCallback(() => {
+    setErrorCode(null);
+    setError(null);
+  }, []);
 
   const cleanupStream = React.useCallback(() => {
     if (raf.current) cancelAnimationFrame(raf.current);
@@ -119,24 +174,59 @@ export function useRecorder(): UseRecorderResult {
   }, [status, tick]);
 
   const refreshDevices = React.useCallback(async () => {
+    if (!navigator.mediaDevices?.enumerateDevices) return;
     try {
       const list = await navigator.mediaDevices.enumerateDevices();
-      setDevices(list.filter((d) => d.kind === "audioinput"));
+      const inputs = list.filter((d) => d.kind === "audioinput" && d.deviceId);
+      setDevices(inputs);
+      setDeviceId((current) => {
+        if (current && inputs.some((d) => d.deviceId === current)) return current;
+        return inputs[0]?.deviceId ?? null;
+      });
     } catch {
       /* ignore */
     }
   }, []);
 
+  const acquireStream = React.useCallback(async (preferredId: string | null): Promise<MediaStream> => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new DOMException("getUserMedia not supported", "NotSupportedError");
+    }
+    try {
+      return await navigator.mediaDevices.getUserMedia({
+        audio: buildAudioConstraints(preferredId),
+      });
+    } catch (first) {
+      if (isPlaceholderDeviceId(preferredId)) throw first;
+      return navigator.mediaDevices.getUserMedia({ audio: buildAudioConstraints(null) });
+    }
+  }, []);
+
+  const ensureMicPermission = React.useCallback(async () => {
+    const s = await acquireStream(null);
+    s.getTracks().forEach((t) => t.stop());
+    await refreshDevices();
+  }, [acquireStream, refreshDevices]);
+
+  React.useEffect(() => {
+    if (!navigator.mediaDevices?.getUserMedia) return;
+    ensureMicPermission().catch(() => {
+      /* Permission may be granted on first record attempt */
+    });
+  }, [ensureMicPermission]);
+
   const start = React.useCallback(async () => {
-    setError(null);
+    clearMicError();
     setStatus("requesting");
     try {
-      const constraints: MediaStreamConstraints = {
-        audio: deviceId
-          ? { deviceId: { exact: deviceId }, noiseSuppression: true, echoCancellation: true }
-          : { noiseSuppression: true, echoCancellation: true },
-      };
-      const s = await navigator.mediaDevices.getUserMedia(constraints);
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setMicError("unsupported");
+        setStatus("error");
+        return;
+      }
+
+      const preferred = isPlaceholderDeviceId(deviceId) ? null : deviceId;
+      const s = await acquireStream(preferred);
       stream.current = s;
       await refreshDevices();
 
@@ -148,16 +238,25 @@ export function useRecorder(): UseRecorderResult {
       source.connect(an);
       analyser.current = an;
 
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-        ? "audio/webm;codecs=opus"
-        : "audio/webm";
+      const mimeType = pickRecorderMimeType();
+      recorderMimeType.current = mimeType;
       const mr = new MediaRecorder(s, { mimeType });
       chunks.current = [];
       mr.ondataavailable = (e) => {
         if (e.data.size > 0) chunks.current.push(e.data);
       };
       mr.onstop = () => {
-        setBlob(new Blob(chunks.current, { type: mimeType }));
+        const recorded = new Blob(chunks.current, { type: recorderMimeType.current });
+        setBlob(recorded.size > 0 ? recorded : null);
+        if (recorded.size === 0) {
+          setMicError("generic");
+          setStatus("error");
+        } else {
+          setStatus("stopped");
+        }
+        mediaRecorder.current = null;
+        cleanupStream();
+        setLevel(0);
       };
       mr.start(250);
       mediaRecorder.current = mr;
@@ -170,21 +269,21 @@ export function useRecorder(): UseRecorderResult {
     } catch (err) {
       cleanupStream();
       setStatus("error");
-      setError(
-        err instanceof DOMException && err.name === "NotAllowedError"
-          ? "Mikrofon erişimi reddedildi. Tarayıcı izinlerini kontrol edin."
-          : "Mikrofona erişilemedi.",
-      );
+      setMicError(micErrorCodeFromException(err));
     }
-  }, [deviceId, refreshDevices, cleanupStream]);
+  }, [deviceId, refreshDevices, cleanupStream, acquireStream, clearMicError, setMicError]);
 
   const stop = React.useCallback(() => {
-    if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
-      mediaRecorder.current.stop();
+    const mr = mediaRecorder.current;
+    if (!mr || mr.state === "inactive") {
+      cleanupStream();
+      setLevel(0);
+      setStatus("stopped");
+      return;
     }
-    cleanupStream();
+    // Finalize blob in onstop before releasing the microphone stream.
+    mr.stop();
     setLevel(0);
-    setStatus("stopped");
   }, [cleanupStream]);
 
   const pause = React.useCallback(() => {
@@ -208,11 +307,12 @@ export function useRecorder(): UseRecorderResult {
       cleanupStream();
       mediaRecorder.current = null;
       chunks.current = [];
-      setError(null);
+      clearMicError();
 
       if (!isLikelyAudio(file)) {
         setStatus("error");
-        setError("Desteklenmeyen dosya. MP3, WAV, M4A, OGG veya WebM seçin.");
+        setErrorCode("generic");
+        setError("unsupported_file");
         return false;
       }
 
@@ -224,7 +324,7 @@ export function useRecorder(): UseRecorderResult {
       setStatus("stopped");
       return true;
     },
-    [cleanupStream],
+    [cleanupStream, clearMicError],
   );
 
   const reset = React.useCallback(() => {
@@ -236,22 +336,22 @@ export function useRecorder(): UseRecorderResult {
     setDurationMs(0);
     setLevel(0);
     setStatus("idle");
-    setError(null);
-  }, [cleanupStream]);
+    clearMicError();
+  }, [cleanupStream, clearMicError]);
 
   const getWaveform = React.useCallback((buffer: Uint8Array) => {
     if (analyser.current) analyser.current.getByteTimeDomainData(buffer as Uint8Array<ArrayBuffer>);
   }, []);
 
-  const setDevice = React.useCallback((id: string) => setDeviceId(id), []);
-
-  React.useEffect(() => {
-    refreshDevices();
-  }, [refreshDevices]);
+  const setDevice = React.useCallback((id: string) => {
+    if (isPlaceholderDeviceId(id)) return;
+    setDeviceId(id);
+  }, []);
 
   return {
     status,
     error,
+    errorCode,
     durationMs,
     level,
     devices,

@@ -1,5 +1,8 @@
 import httpx
 
+from app.core.config import get_settings
+from app.services.ai_service_urls import resolve_text_base_url, resolve_transcription_base_url
+
 
 def _parse_openai_models_list(payload: dict) -> list[str]:
     """Parse OpenAI-compatible GET /v1/models (data may be null on some Ollama builds)."""
@@ -37,9 +40,32 @@ def _ollama_root_from_v1_base(base_url: str) -> str | None:
     return None
 
 
+def _extract_transcription_text(payload: object) -> str:
+    if not isinstance(payload, dict):
+        return ""
+    text = payload.get("text")
+    if isinstance(text, str) and text.strip():
+        return text.strip()
+    segments = payload.get("segments")
+    if isinstance(segments, list):
+        parts = []
+        for segment in segments:
+            if isinstance(segment, dict):
+                seg_text = segment.get("text")
+                if isinstance(seg_text, str) and seg_text.strip():
+                    parts.append(seg_text.strip())
+        if parts:
+            return " ".join(parts)
+    return ""
+
+
 class AiGateway:
     def __init__(self) -> None:
-        self.timeout = httpx.Timeout(120.0)
+        settings = get_settings()
+        llm_seconds = max(60, int(settings.ollama_request_timeout_seconds))
+        self.timeout = httpx.Timeout(120.0, connect=30.0)
+        self.llm_timeout = httpx.Timeout(float(llm_seconds), connect=30.0)
+        self.transcribe_timeout = httpx.Timeout(600.0, connect=30.0)
 
     async def _fetch_model_names(self, client: httpx.AsyncClient, url: str) -> list[str]:
         response = await client.get(url)
@@ -53,7 +79,7 @@ class AiGateway:
         return _parse_ollama_tags(payload)
 
     async def list_text_models(self, base_url: str) -> list[str]:
-        base = base_url.rstrip("/")
+        base = resolve_text_base_url(base_url).rstrip("/")
         urls = [f"{base}/models"]
         ollama_root = _ollama_root_from_v1_base(base)
         if ollama_root:
@@ -73,7 +99,7 @@ class AiGateway:
             return []
 
     async def list_transcription_models(self, base_url: str) -> list[str]:
-        base = base_url.rstrip("/")
+        base = resolve_transcription_base_url(base_url).rstrip("/")
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             names = await self._fetch_model_names(client, f"{base}/models")
             return sorted(set(names))
@@ -91,29 +117,31 @@ class AiGateway:
             "Bu kayıt Türkçe radyoloji diktesidir. Çıktıyı Türkçe Latin alfabesiyle yaz. "
             "İbranice, Arapça veya başka alfabe kullanma."
         )
-        radiology_hotwords = (
-            "akciğer, grafisi, sol, sağ, bronkovasküler, opasite, infiltrasyon, plevral, "
-            "efüzyon, pnömotoraks, kardiyotorasik, mediasten, diyafragma, radyoloji"
-        )
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
+        if not content:
+            return ""
+        whisper_base = resolve_transcription_base_url(base_url).rstrip("/")
+        mime = (content_type or "").split(";")[0].strip() or "audio/webm"
+        async with httpx.AsyncClient(timeout=self.transcribe_timeout) as client:
             response = await client.post(
-                f"{base_url.rstrip('/')}/audio/transcriptions",
+                f"{whisper_base}/audio/transcriptions",
                 data={
                     "model": model,
                     "language": language,
                     "prompt": transcription_hints,
-                    "hotwords": radiology_hotwords,
                     "response_format": "json",
                     "temperature": "0",
-                    "vad_filter": "true",
+                    "vad_filter": "false",
                 },
-                files={"file": (filename, content, content_type or "application/octet-stream")},
+                files={"file": (filename, content, mime)},
             )
             response.raise_for_status()
-            payload = response.json()
-            return payload.get("text", "")
+            text = _extract_transcription_text(response.json())
+            if not text:
+                raise ValueError("Transcription returned empty text")
+            return text
 
     async def format_report(self, base_url: str, model: str, transcript: str, template: str | None = None) -> str:
+        llm_base = resolve_text_base_url(base_url).rstrip("/")
         system_prompt = (
             "Sen kıdemli bir radyoloji uzmanısın. Görevin, ses transkripsiyonundan gelen Türkçe radyoloji "
             "metnini yalnızca yazım, noktalama, tıbbi terminoloji ve rapor düzeni açısından düzeltmektir.\n\n"
@@ -142,9 +170,9 @@ class AiGateway:
                 f"{template}"
             )
 
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
+        async with httpx.AsyncClient(timeout=self.llm_timeout) as client:
             response = await client.post(
-                f"{base_url.rstrip('/')}/chat/completions",
+                f"{llm_base}/chat/completions",
                 json={
                     "model": model,
                     "temperature": 0.1,
@@ -159,9 +187,10 @@ class AiGateway:
             return payload["choices"][0]["message"]["content"]
 
     async def _chat(self, base_url: str, model: str, system_prompt: str, user_prompt: str, temperature: float = 0.2) -> str:
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
+        llm_base = resolve_text_base_url(base_url).rstrip("/")
+        async with httpx.AsyncClient(timeout=self.llm_timeout) as client:
             response = await client.post(
-                f"{base_url.rstrip('/')}/chat/completions",
+                f"{llm_base}/chat/completions",
                 json={
                     "model": model,
                     "temperature": temperature,
@@ -218,9 +247,10 @@ class AiGateway:
             if content is None:
                 continue
             chat_messages.append({"role": role, "content": str(content)})
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
+        llm_base = resolve_text_base_url(base_url).rstrip("/")
+        async with httpx.AsyncClient(timeout=self.llm_timeout) as client:
             response = await client.post(
-                f"{base_url.rstrip('/')}/chat/completions",
+                f"{llm_base}/chat/completions",
                 json={"model": model, "temperature": 0.3, "messages": chat_messages},
             )
             response.raise_for_status()

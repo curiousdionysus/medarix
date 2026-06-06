@@ -229,10 +229,16 @@ function ReportEditor({ studyId }: { studyId: string }) {
       const res = await sendToPacs.mutateAsync(report.id);
       setAmending(false);
       const status = res.pacs_status?.status ?? "";
-      if (status === "stored_in_orthanc_study_attachment") {
+      const warnings = res.pacs_status?.warnings;
+      if (
+        status === "stored_in_pacs" ||
+        status === "stored_in_orthanc_study_attachment" ||
+        status === "stored_in_pacs_and_orthanc"
+      ) {
         toast.success(t("reports.pacsSignedSent"));
-      } else if (status.startsWith("queued")) {
-        toast.success(t("reports.pacsQueued"));
+        if (Array.isArray(warnings) && warnings.length > 0) {
+          toast.warning(t("reports.pacsPartialWarning", { detail: warnings.join("; ") }));
+        }
       } else {
         const detail = res.pacs_status?.detail;
         toast.message(t("reports.pacsSignedTitle"), {

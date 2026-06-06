@@ -23,7 +23,8 @@ export function PlaybackTransport({ blob, fallbackDurationMs }: Props) {
   const [playing, setPlaying] = React.useState(false);
   const [current, setCurrent] = React.useState(0);
   const [duration, setDuration] = React.useState(0);
-  const fixingDuration = React.useRef(false);
+  const [playError, setPlayError] = React.useState<string | null>(null);
+  const durationProbe = React.useRef(false);
 
   const url = React.useMemo(() => URL.createObjectURL(blob), [blob]);
   React.useEffect(() => () => URL.revokeObjectURL(url), [url]);
@@ -31,23 +32,46 @@ export function PlaybackTransport({ blob, fallbackDurationMs }: Props) {
   const fallback = fallbackDurationMs ? fallbackDurationMs / 1000 : 0;
   const totalDuration = isFinite(duration) && duration > 0 ? duration : fallback;
 
-  const onLoadedMetadata = () => {
+  React.useEffect(() => {
+    setPlaying(false);
+    setCurrent(0);
+    setDuration(0);
+    setPlayError(null);
+    durationProbe.current = false;
+    const a = audioRef.current;
+    if (a) {
+      a.pause();
+      a.load();
+    }
+  }, [url]);
+
+  const syncDurationFromElement = React.useCallback(() => {
     const a = audioRef.current;
     if (!a) return;
-    if (!isFinite(a.duration) || a.duration === 0) {
-      fixingDuration.current = true;
-      a.currentTime = 1e101;
-    } else {
+    if (isFinite(a.duration) && a.duration > 0) {
       setDuration(a.duration);
+      durationProbe.current = false;
+    }
+  }, []);
+
+  const onLoadedMetadata = () => {
+    syncDurationFromElement();
+    const a = audioRef.current;
+    if (!a || durationProbe.current) return;
+    if (!isFinite(a.duration) || a.duration === 0) {
+      durationProbe.current = true;
+      a.currentTime = 1e101;
     }
   };
+
+  const onDurationChange = () => syncDurationFromElement();
 
   const onTimeUpdate = () => {
     const a = audioRef.current;
     if (!a) return;
-    if (fixingDuration.current) {
-      fixingDuration.current = false;
-      setDuration(isFinite(a.duration) ? a.duration : fallback);
+    if (durationProbe.current) {
+      durationProbe.current = false;
+      syncDurationFromElement();
       a.currentTime = 0;
       setCurrent(0);
       return;
@@ -55,12 +79,30 @@ export function PlaybackTransport({ blob, fallbackDurationMs }: Props) {
     setCurrent(a.currentTime);
   };
 
-  const togglePlay = () => {
+  React.useEffect(() => {
+    if (!playing) return;
+    let raf = 0;
+    const tick = () => {
+      const a = audioRef.current;
+      if (a && !a.paused) setCurrent(a.currentTime);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [playing]);
+
+  const togglePlay = async () => {
     const a = audioRef.current;
     if (!a) return;
+    setPlayError(null);
     if (a.paused) {
-      a.play();
-      setPlaying(true);
+      try {
+        await a.play();
+        setPlaying(true);
+      } catch {
+        setPlaying(false);
+        setPlayError(t("playback.playFailed"));
+      }
     } else {
       a.pause();
       setPlaying(false);
@@ -70,7 +112,8 @@ export function PlaybackTransport({ blob, fallbackDurationMs }: Props) {
   const seekTo = (time: number) => {
     const a = audioRef.current;
     if (!a) return;
-    const clamped = Math.max(0, Math.min(totalDuration || a.duration || time, time));
+    const max = totalDuration || (isFinite(a.duration) ? a.duration : 0);
+    const clamped = Math.max(0, Math.min(max || time, time));
     a.currentTime = clamped;
     setCurrent(clamped);
   };
@@ -80,14 +123,17 @@ export function PlaybackTransport({ blob, fallbackDurationMs }: Props) {
       <audio
         ref={audioRef}
         src={url}
-        preload="metadata"
+        preload="auto"
         onLoadedMetadata={onLoadedMetadata}
+        onDurationChange={onDurationChange}
         onTimeUpdate={onTimeUpdate}
         onEnded={() => setPlaying(false)}
         onPause={() => setPlaying(false)}
         onPlay={() => setPlaying(true)}
         className="hidden"
       />
+
+      {playError ? <p className="text-center text-xs text-destructive">{playError}</p> : null}
 
       <div className="flex items-center justify-center gap-1.5">
         <Button variant="outline" size="icon-sm" onClick={() => seekTo(0)} aria-label={t("playback.seekStart")} title={t("playback.seekStart")}>
@@ -96,7 +142,7 @@ export function PlaybackTransport({ blob, fallbackDurationMs }: Props) {
         <Button variant="outline" size="icon-sm" onClick={() => seekTo(current - SKIP)} aria-label={t("playback.back5s")} title={t("playback.back5s")}>
           <Rewind />
         </Button>
-        <Button size="icon" onClick={togglePlay} aria-label={playing ? t("playback.pause") : t("playback.play")}>
+        <Button size="icon" onClick={() => void togglePlay()} aria-label={playing ? t("playback.pause") : t("playback.play")}>
           {playing ? <Pause /> : <Play />}
         </Button>
         <Button variant="outline" size="icon-sm" onClick={() => seekTo(current + SKIP)} aria-label={t("playback.forward")} title={t("playback.forward")}>
@@ -114,11 +160,12 @@ export function PlaybackTransport({ blob, fallbackDurationMs }: Props) {
         <input
           type="range"
           min={0}
-          max={totalDuration || 0}
-          step={0.1}
+          max={Math.max(totalDuration, 0.001)}
+          step={0.05}
           value={Math.min(current, totalDuration || 0)}
           onChange={(e) => seekTo(Number(e.target.value))}
-          className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-border accent-primary"
+          disabled={!totalDuration}
+          className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-border accent-primary disabled:opacity-50"
           aria-label={t("playback.position")}
         />
         <span className="w-10 font-mono text-[11px] tabular-nums text-muted-foreground">

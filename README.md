@@ -39,7 +39,7 @@ Medarix targets radiology departments that need:
 
 - A unified **worklist** synced from an external PACS (DICOM Study Root Query/Retrieve, C-FIND)
 - **Voice dictation** with Whisper-based transcription and LLM-assisted report formatting
-- **Structured reports** with versioning, signing, PDF export, and optional DICOM SR delivery
+- **Structured reports** with versioning, signing, PDF export, and optional DICOM PDF delivery to PACS
 - **Local DICOM archive** via Orthanc (DICOMweb) for retrieve and viewer proxy
 - **Role-based access control**, LDAP/Active Directory, and tamper-evident audit logging
 - **Enterprise analytics** and licensing gates for advanced modules
@@ -65,7 +65,7 @@ The production image builds the React SPA inside `backend/Dockerfile` and serves
 - **Imaging status** on worklist: local series counts + Orthanc lookup (`include_imaging=true`)
 - **External PACS web viewer** via configurable URL template (`{accession}`, `{study_instance_uid}`)
 - **DICOMweb proxy** and internal viewer URL for studies in Orthanc
-- **DICOM SR** report send (enterprise)
+- **DICOM Encapsulated PDF** report send to PACS (enterprise)
 
 ### AI center (Enterprise license)
 

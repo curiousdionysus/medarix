@@ -44,6 +44,9 @@ interface Props {
 
   onBeforeSearch?: (next: StudyFilters) => void | Promise<void>;
 
+  /** When set, Clear resets the parent without applying a new search (e.g. worklist). */
+  onClear?: () => void;
+
   searchPending?: boolean;
 
 }
@@ -304,7 +307,7 @@ function DateTimeBox({
 
 
 
-export function StudyFilterBar({ value, onChange, onBeforeSearch, searchPending }: Props) {
+export function StudyFilterBar({ value, onChange, onBeforeSearch, onClear, searchPending }: Props) {
 
   const t = useT();
 
@@ -364,7 +367,7 @@ export function StudyFilterBar({ value, onChange, onBeforeSearch, searchPending 
 
 
 
-  const applyPreset = (days: number) => {
+  const applyPreset = async (days: number) => {
 
     const to = toISODate(new Date());
 
@@ -374,11 +377,15 @@ export function StudyFilterBar({ value, onChange, onBeforeSearch, searchPending 
 
     const from = toISODate(fromDate);
 
-    const next = { ...draft, from_date: from, to_date: to, from_time: "", to_time: "" };
+    const nextDraft = { ...draft, from_date: from, to_date: to, from_time: "", to_time: "" };
 
-    setDraft(next);
+    setDraft(nextDraft);
 
-    onChange(filtersFromDraft(next, value));
+    const next = filtersFromDraft(nextDraft, value);
+
+    if (onBeforeSearch) await onBeforeSearch(next);
+
+    onChange(next);
 
   };
 
@@ -409,6 +416,11 @@ export function StudyFilterBar({ value, onChange, onBeforeSearch, searchPending 
   const clear = () => {
 
     setDraft(toDraft({ limit: value.limit }));
+
+    if (onClear) {
+      onClear();
+      return;
+    }
 
     onChange({ limit: value.limit, include_imaging: value.include_imaging, has_report: value.has_report });
 
@@ -634,7 +646,7 @@ export function StudyFilterBar({ value, onChange, onBeforeSearch, searchPending 
 
                 active={activePreset === p.id}
 
-                onClick={() => applyPreset(p.days)}
+                onClick={() => void applyPreset(p.days)}
 
               >
 

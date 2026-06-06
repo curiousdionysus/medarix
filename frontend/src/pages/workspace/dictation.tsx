@@ -135,7 +135,12 @@ export default function DictationPage() {
         filename: recorder.sourceFilename ?? "dictation.webm",
         studyId: study?.id,
       });
-      setTranscript((prev) => (prev ? `${prev}\n${res.text}` : res.text));
+      const text = (res.text ?? "").trim();
+      if (!text) {
+        toast.warning(t("dictation.transcribeEmpty"));
+        return;
+      }
+      setTranscript((prev) => (prev ? `${prev}\n${text}` : text));
       toast.success(t("dictation.transcribeSuccess"));
     } catch (err) {
       toast.error(apiErr(err, "dictation.transcribeFail"));
@@ -246,17 +251,19 @@ export default function DictationPage() {
               <Waveform active={recording} getWaveform={recorder.getWaveform} className="h-24 w-full" />
             </div>
 
-            {recorder.error && (
+            {recorder.errorCode && (
               <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                 <AlertCircle className="size-4" />
-                {recorder.error}
+                {recorder.error === "unsupported_file"
+                  ? t("dictation.unsupportedAudioFile")
+                  : t(`dictation.micErrors.${recorder.errorCode}`)}
               </div>
             )}
 
             <input
               ref={fileInputRef}
               type="file"
-              accept="audio/*,.mp3,.wav,.m4a,.ogg,.webm,.flac,.aac,.wma,.opus"
+              accept="audio/*,video/mp4,video/webm,.mp3,.wav,.m4a,.mp4,.ogg,.webm,.flac,.aac,.wma,.opus"
               className="hidden"
               onChange={handleUploadFile}
             />
@@ -301,23 +308,23 @@ export default function DictationPage() {
               )}
             </div>
 
-            {recorder.devices.length > 0 && (
+            {recorder.devices.length > 0 && recorder.deviceId ? (
               <div className="flex items-center gap-2">
                 <Settings2 className="size-4 shrink-0 text-muted-foreground" />
-                <Select value={recorder.deviceId ?? recorder.devices[0]?.deviceId} onValueChange={recorder.setDevice}>
+                <Select value={recorder.deviceId} onValueChange={recorder.setDevice}>
                   <SelectTrigger className="h-8 text-xs">
                     <SelectValue placeholder={t("dictation.micSelect")} />
                   </SelectTrigger>
                   <SelectContent>
                     {recorder.devices.map((d, i) => (
-                      <SelectItem key={d.deviceId || i} value={d.deviceId || `mic-${i}`}>
+                      <SelectItem key={d.deviceId} value={d.deviceId}>
                         {d.label || t("dictation.microphoneN", { n: String(i + 1) })}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            )}
+            ) : null}
 
             {recorder.sourceFilename && hasAudio && (
               <p className="truncate text-center text-xs text-muted-foreground">

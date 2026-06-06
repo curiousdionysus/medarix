@@ -15,6 +15,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
                 "font-src 'self' https://fonts.gstatic.com data:; "
                 "connect-src 'self'; "
+                "media-src 'self' blob:; "
                 "img-src 'self' data: blob:; "
                 "frame-ancestors 'none'; "
                 "base-uri 'self'; "
@@ -23,6 +24,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("X-Frame-Options", "DENY")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-        response.headers.setdefault("Permissions-Policy", "camera=(), geolocation=(), payment=()")
+        response.headers.setdefault(
+            "Permissions-Policy",
+            "camera=(), microphone=(self), geolocation=(), payment=()",
+        )
         response.headers.setdefault("X-Permitted-Cross-Domain-Policies", "none")
         return response

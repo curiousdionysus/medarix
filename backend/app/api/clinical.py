@@ -25,7 +25,7 @@ from app.services.audit import record_audit_event
 from app.services.clinical_helpers import serialize_study
 from app.services.dicom_gateway import dicom_gateway
 from app.core.http_utils import safe_content_disposition_filename
-from app.services.patient_crypto import escape_ilike_pattern, patient_hash
+from app.services.patient_crypto import decrypt_value, escape_ilike_pattern, patient_hash
 from app.services.pdf_report import build_report_pdf
 from app.services.rbac import require_permission
 from app.services.pacs_imaging import enrich_studies_imaging
@@ -419,12 +419,20 @@ def send_report_to_pacs(
     db.commit()
     db.refresh(report)
 
+    patient = db.get(Patient, study.patient_id)
     pacs_status = dicom_gateway.store_report(
         report,
         study,
         system_settings,
         current_user.display_name or current_user.username,
+        patient_dicom_id=decrypt_value(patient.patient_id_enc) if patient else None,
+        patient_name=decrypt_value(patient.name_enc) if patient else None,
     )
+    if pacs_status.get("status") == "failed":
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=pacs_status.get("detail") or "Rapor PACS'e gönderilemedi.",
+        )
     record_audit_event(
         db,
         request=request,

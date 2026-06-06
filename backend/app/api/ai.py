@@ -1,6 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
+import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
@@ -37,6 +38,41 @@ def _require_ai_enabled(system_settings: dict[str, str]) -> None:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Yapay zeka servisleri yönetim panelinden devre dışı bırakıldı.",
         )
+
+
+def _raise_llm_error(exc: Exception) -> None:
+    if isinstance(exc, httpx.ConnectError):
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=(
+                "Ollama dil modeli sunucusuna bağlanılamadı. "
+                "medarix-ai konteynerinin çalıştığını doğrulayın."
+            ),
+        ) from exc
+    if isinstance(exc, httpx.ReadTimeout):
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail=(
+                "Dil modeli yanıt vermedi (zaman aşımı). CPU modunda uzun raporlar birkaç dakika sürebilir; "
+                "biraz bekleyip tekrar deneyin veya metni kısaltın. "
+                "Gerekirse MEDARIX_OLLAMA_REQUEST_TIMEOUT_SECONDS değerini artırın."
+            ),
+        ) from exc
+    if isinstance(exc, httpx.HTTPStatusError):
+        if exc.response.status_code == 404:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=(
+                    "Seçili dil modeli Ollama'da yüklü değil. "
+                    "Kurulum: docker exec medarix-ai ollama pull llama3.1:latest — "
+                    "ardından Yönetim → Sistem Ayarları'nda bu modeli seçin."
+                ),
+            ) from exc
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Dil modeli sunucusu hata döndürdü: {exc.response.status_code}",
+        ) from exc
+    raise exc
 
 
 @router.get("/models/text")
@@ -79,14 +115,38 @@ async def transcribe_audio(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="Ses dosyası boyutu izin verilen üst sınırı aşıyor.",
         )
-    text = await ai_gateway.transcribe_audio(
-        system_settings["ai.transcription_base_url"],
-        system_settings["ai.transcription_model"],
-        system_settings.get("ai.transcription_language", "tr"),
-        file.filename or "recording.webm",
-        content,
-        file.content_type,
-    )
+    try:
+        text = await ai_gateway.transcribe_audio(
+            system_settings["ai.transcription_base_url"],
+            system_settings["ai.transcription_model"],
+            system_settings.get("ai.transcription_language", "tr"),
+            file.filename or "recording.webm",
+            content,
+            file.content_type,
+        )
+    except httpx.ConnectError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=(
+                "Transkripsiyon sunucusuna (Whisper) bağlanılamadı. "
+                "Docker ortamında Sistem Ayarları → Transkripsiyon URL: http://whisper:8000/v1 olmalıdır."
+            ),
+        ) from exc
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Transkripsiyon sunucusu hata döndürdü: {exc.response.status_code}",
+        ) from exc
+    except httpx.ReadTimeout as exc:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Transkripsiyon zaman aşımına uğradı. Daha kısa kayıt deneyin veya Whisper modelini küçültün.",
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc) or "Transkripsiyon boş döndü. Kayıtta konuşma algılanmadı.",
+        ) from exc
     recording = save_audio_recording(
         db,
         user_id=current_user.id,
@@ -129,12 +189,15 @@ async def format_report(
     require_permission(current_user, "ai:use")
     system_settings = get_settings_map(db)
     _require_ai_enabled(system_settings)
-    report = await ai_gateway.format_report(
-        system_settings["ai.text_base_url"],
-        system_settings["ai.text_model"],
-        payload.transcript,
-        payload.template,
-    )
+    try:
+        report = await ai_gateway.format_report(
+            system_settings["ai.text_base_url"],
+            system_settings["ai.text_model"],
+            payload.transcript,
+            payload.template,
+        )
+    except (httpx.HTTPError, httpx.TimeoutException) as exc:
+        _raise_llm_error(exc)
     recording = save_structured_report(
         db,
         user_id=current_user.id,
@@ -186,12 +249,15 @@ async def suggestions(
         return AiSuggestionResponse(result="", model="", kind=payload.kind)
     system_settings = get_settings_map(db)
     _require_ai_enabled(system_settings)
-    result = await ai_gateway.suggest(
-        system_settings["ai.text_base_url"],
-        system_settings["ai.text_model"],
-        payload.text,
-        payload.kind,
-    )
+    try:
+        result = await ai_gateway.suggest(
+            system_settings["ai.text_base_url"],
+            system_settings["ai.text_model"],
+            payload.text,
+            payload.kind,
+        )
+    except (httpx.HTTPError, httpx.TimeoutException) as exc:
+        _raise_llm_error(exc)
     record_audit_event(
         db,
         request=request,
@@ -214,12 +280,15 @@ async def assistant(
     require_enterprise_license(db)
     system_settings = get_settings_map(db)
     _require_ai_enabled(system_settings)
-    reply = await ai_gateway.assistant_reply(
-        system_settings["ai.text_base_url"],
-        system_settings["ai.text_model"],
-        [m.model_dump() for m in payload.messages],
-        payload.report_context,
-    )
+    try:
+        reply = await ai_gateway.assistant_reply(
+            system_settings["ai.text_base_url"],
+            system_settings["ai.text_model"],
+            [m.model_dump() for m in payload.messages],
+            payload.report_context,
+        )
+    except (httpx.HTTPError, httpx.TimeoutException) as exc:
+        _raise_llm_error(exc)
     record_audit_event(
         db,
         request=request,

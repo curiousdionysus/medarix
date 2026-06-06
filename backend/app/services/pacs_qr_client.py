@@ -30,6 +30,14 @@ class PacsQueryParams:
 
 
 @dataclass(frozen=True)
+class PacsStoreParams:
+    local_ae_title: str
+    called_ae_title: str
+    host: str
+    port: int
+
+
+@dataclass(frozen=True)
 class PacsMoveParams:
     local_ae_title: str
     called_ae_title: str
@@ -182,4 +190,71 @@ def move_study(params: PacsMoveParams) -> dict:
         assoc.release()
 
     logger.info("PACS C-MOVE sonucu: %s", outcome)
+    return outcome
+
+
+def store_dicom(params: PacsStoreParams, dataset_bytes: bytes) -> dict:
+    """C-STORE a DICOM instance (e.g. Basic Text SR) to the configured PACS."""
+    from io import BytesIO
+
+    try:
+        from pydicom import dcmread
+        from pynetdicom import AE
+    except ImportError as exc:  # pragma: no cover
+        raise PacsConnectionError("pynetdicom is not installed") from exc
+
+    from pydicom.uid import ExplicitVRBigEndian, ExplicitVRLittleEndian, ImplicitVRLittleEndian
+
+    ds = dcmread(BytesIO(dataset_bytes))
+    sop_class = str(getattr(ds, "SOPClassUID", "") or "")
+
+    logger.info(
+        "PACS C-STORE: sop=%s local_ae=%s called_ae=%s host=%s:%s",
+        sop_class,
+        params.local_ae_title,
+        params.called_ae_title,
+        params.host,
+        params.port,
+    )
+
+    ae = AE(ae_title=params.local_ae_title[:16])
+    if sop_class:
+        for transfer_syntax in (
+            ImplicitVRLittleEndian,
+            ExplicitVRLittleEndian,
+            ExplicitVRBigEndian,
+        ):
+            ae.add_requested_context(sop_class, transfer_syntax)
+
+    assoc = ae.associate(
+        params.host,
+        params.port,
+        ae_title=params.called_ae_title[:16],
+        max_pdu=16382,
+    )
+    if not assoc.is_established:
+        reason = assoc.acceptor.primitive.result if assoc.acceptor else "unknown"
+        assoc.release()
+        raise PacsConnectionError(
+            f"PACS ile C-STORE association kurulamadı ({params.host}:{params.port}, "
+            f"called AE={params.called_ae_title}): {reason}"
+        )
+
+    outcome: dict = {
+        "status": "failed",
+        "pacs_host": params.host,
+        "called_ae_title": params.called_ae_title,
+        "sop_instance_uid": str(getattr(ds, "SOPInstanceUID", "") or ""),
+    }
+    try:
+        status = assoc.send_c_store(ds)
+        status_code = int(getattr(status, "Status", 0) or 0) if status is not None else 0
+        if status_code == 0x0000:
+            outcome["status"] = "stored"
+            logger.info("PACS C-STORE başarılı: %s", outcome["sop_instance_uid"])
+        else:
+            outcome["detail"] = f"C-STORE başarısız (status=0x{status_code:04X})"
+            logger.warning("PACS C-STORE reddedildi: %s", outcome["detail"])
+    finally:
+        assoc.release()
     return outcome

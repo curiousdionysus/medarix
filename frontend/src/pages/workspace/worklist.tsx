@@ -34,9 +34,17 @@ export default function WorklistPage() {
 
   const apiErr = useApiError();
 
-  const [filters, setFilters] = React.useState<StudyFilters>({ limit: 150, include_imaging: true });
+  const filterDefaults = React.useMemo<StudyFilters>(
+    () => ({ limit: 150, include_imaging: true }),
+    [],
+  );
+  const [appliedFilters, setAppliedFilters] = React.useState<StudyFilters | null>(null);
+  const hasSearched = appliedFilters !== null;
 
-  const { data, isLoading, isFetching } = useStudies(filters);
+  const { data, isLoading, isFetching } = useStudies(
+    appliedFilters ?? filterDefaults,
+    hasSearched,
+  );
 
   const navigate = useNavigate();
 
@@ -128,9 +136,9 @@ export default function WorklistPage() {
 
   const total = studies.length;
 
-  const studiesLoading = isLoading;
+  const studiesLoading = hasSearched && isLoading;
 
-  const studiesFetching = isFetching && !isLoading;
+  const studiesFetching = hasSearched && isFetching && !isLoading;
 
 
 
@@ -152,9 +160,11 @@ export default function WorklistPage() {
 
       <StudyFilterBar
 
-        value={filters}
+        value={appliedFilters ?? filterDefaults}
 
-        onChange={setFilters}
+        onChange={setAppliedFilters}
+
+        onClear={() => setAppliedFilters(null)}
 
         onBeforeSearch={pullMwlBeforeSearch}
 
@@ -164,11 +174,19 @@ export default function WorklistPage() {
 
 
 
-      {!studiesLoading && total > 0 && filters.limit && total >= filters.limit ? (
+      {!hasSearched ? (
+        <EmptyState
+          icon={ListChecks}
+          title={t("worklist.empty")}
+          description={t("worklist.searchPrompt")}
+        />
+      ) : null}
+
+      {!studiesLoading && total > 0 && appliedFilters?.limit && total >= appliedFilters.limit ? (
 
         <p className="text-center text-xs text-muted-foreground">
 
-          {t("worklist.studiesLimit", { limit: String(filters.limit) })}
+          {t("worklist.studiesLimit", { limit: String(appliedFilters.limit) })}
 
         </p>
 
@@ -176,7 +194,7 @@ export default function WorklistPage() {
 
 
 
-      {(studiesLoading || total > 0) && (
+      {hasSearched && (studiesLoading || total > 0) && (
 
         <WorklistList
 
@@ -196,11 +214,9 @@ export default function WorklistPage() {
 
 
 
-      {!studiesLoading && total === 0 && (
-
-        <EmptyState icon={ListChecks} title={t("worklist.empty")} description={t("filter.search")} />
-
-      )}
+      {hasSearched && !studiesLoading && total === 0 ? (
+        <EmptyState icon={ListChecks} title={t("worklist.empty")} description={t("worklist.noResults")} />
+      ) : null}
 
     </div>
 

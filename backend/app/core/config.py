@@ -46,6 +46,7 @@ class Settings(BaseSettings):
 
     ollama_base_url: str = "http://ollama:11434/v1"
     ollama_model: str = "llama3.1:latest"
+    ollama_request_timeout_seconds: int = 600
     whisper_base_url: str = "http://whisper:8000/v1"
     whisper_model: str = "Systran/faster-whisper-large-v3"
 

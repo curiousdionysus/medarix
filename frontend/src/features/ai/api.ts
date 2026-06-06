@@ -11,7 +11,25 @@ export function useTranscribe() {
   return useMutation({
     mutationFn: async (args: { blob: Blob; filename?: string; studyId?: string }) => {
       const form = new FormData();
-      form.append("file", args.blob, args.filename ?? "dictation.webm");
+      const name = args.filename ?? "dictation.webm";
+      const ext = name.includes(".") ? name.slice(name.lastIndexOf(".")).toLowerCase() : "";
+      const extMime: Record<string, string> = {
+        ".mp4": "video/mp4",
+        ".m4a": "audio/mp4",
+        ".webm": "audio/webm",
+        ".wav": "audio/wav",
+        ".mp3": "audio/mpeg",
+        ".mpeg": "audio/mpeg",
+        ".ogg": "audio/ogg",
+        ".flac": "audio/flac",
+        ".aac": "audio/aac",
+        ".opus": "audio/ogg",
+      };
+      const mime =
+        args.blob.type && args.blob.type !== "application/octet-stream"
+          ? args.blob.type.split(";")[0]
+          : extMime[ext] ?? "audio/webm";
+      form.append("file", new File([args.blob], name, { type: mime }));
       if (args.studyId) form.append("study_id", args.studyId);
       const { data } = await api.post<TranscriptionResponse>("/ai/transcribe", form, {
         headers: { "Content-Type": "multipart/form-data" },
