@@ -28,9 +28,10 @@ import { useRecorder } from "@/features/dictation/use-recorder";
 import { Waveform } from "@/features/dictation/waveform";
 import { PlaybackTransport } from "@/features/dictation/playback";
 import { countMedicalTerms } from "@/features/dictation/medical-terms";
+import { ReportQAPanel } from "@/features/qa/report-qa-panel";
 import { useTranscribe, useFormatReport } from "@/features/ai/api";
 import { useTemplates, useStudy, useSaveReport } from "@/features/studies/api";
-import type { StudyOut } from "@/types/api";
+import type { StudyOut, ReportQAOut } from "@/types/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { AiConfidenceChip } from "@/components/shared/ai-confidence";
 import { ModalityBadge } from "@/components/shared/status-badge";
@@ -69,6 +70,7 @@ export default function DictationPage() {
   const [study, setStudy] = React.useState<StudyOut | null>(passedStudy ?? null);
   const [transcript, setTranscript] = React.useState("");
   const [report, setReport] = React.useState("");
+  const [qaResult, setQaResult] = React.useState<ReportQAOut | null>(null);
   const [templateId, setTemplateId] = React.useState<string>("none");
   const [focusMode, setFocusMode] = React.useState(false);
   const saveReport = useSaveReport(study?.id);
@@ -161,6 +163,7 @@ export default function DictationPage() {
         studyId: study?.id ?? null,
       });
       setReport(res.report);
+      setQaResult(res.qa ?? null);
       toast.success(study ? t("dictation.reportCreatedSaved") : t("dictation.reportCreated"));
     } catch (err) {
       toast.error(apiErr(err, "dictation.reportCreateFail"));
@@ -428,6 +431,7 @@ export default function DictationPage() {
               placeholder={t("dictation.reportPlaceholder")}
               className="min-h-64 font-mono text-sm"
             />
+            {qaResult && <ReportQAPanel qa={qaResult} className="mt-4" />}
           </CardContent>
         </Card>
       )}

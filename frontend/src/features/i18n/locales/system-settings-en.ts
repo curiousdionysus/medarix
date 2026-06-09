@@ -1,7 +1,7 @@
 export const systemSettings = {
   ai_enabled: {
-    label: "AI services enabled",
-    desc: "When off, transcription, report editing, and the AI assistant are disabled.",
+    label: "AI module enabled",
+    desc: "When off, transcription, report formatting, the AI assistant, and quality assurance are disabled.",
   },
   ai_text_base_url: {
     label: "LLM server URL",
@@ -22,6 +22,22 @@ export const systemSettings = {
   ai_transcription_language: {
     label: "Transcription language",
     desc: "Whisper language code. Use tr for Turkish; auto-detect may produce wrong script.",
+  },
+  qa_enabled: {
+    label: "Report quality assurance (QA)",
+    desc: "When on, structured reports are validated against the transcript with scores and warnings.",
+  },
+  qa_secondary_review_enabled: {
+    label: "Secondary AI reviewer",
+    desc: "A second LLM checks for hallucinations and omissions (independent of the primary model).",
+  },
+  qa_traceability_enabled: {
+    label: "Sentence traceability",
+    desc: "Maps each report sentence to its transcript source.",
+  },
+  qa_review_model: {
+    label: "Reviewer model",
+    desc: "Secondary reviewer model. Leave empty to use the primary LLM.",
   },
   pacs_enabled: {
     label: "PACS integration enabled",

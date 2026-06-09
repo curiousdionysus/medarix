@@ -215,6 +215,15 @@ class ReportPacsSendResponse(BaseModel):
     pacs_status: dict
 
 
+class ReportFinalizeRequest(BaseModel):
+    user_acknowledged: bool
+
+
+class ReportFinalizeResponse(BaseModel):
+    report: ReportOut
+    pacs_status: dict | None = None
+
+
 class LicenseActivateRequest(BaseModel):
     key: str
 
@@ -283,13 +292,6 @@ class FormatReportRequest(BaseModel):
     template: str | None = None
     recording_id: UUID | None = None
     study_id: UUID | None = None
-
-
-class FormatReportResponse(BaseModel):
-    report: str
-    model: str
-    recording_id: UUID
-    saved_report: ReportOut | None = None
 
 
 class DictationRecordingOut(BaseModel):
@@ -444,3 +446,72 @@ class AiSuggestionResponse(BaseModel):
     result: str
     model: str
     kind: str
+
+
+class ReportQAScoresOut(BaseModel):
+    transcription_confidence: float
+    measurement_accuracy: float
+    laterality_accuracy: float
+    entity_preservation: float
+    reviewer_confidence: float
+    overall_score: int
+    risk_level: str
+
+
+class ReportQAFindingOut(BaseModel):
+    type: str
+    severity: str
+    message: str
+    original: str | None = None
+    report: str | None = None
+    details: dict | None = None
+
+
+class ReportQATraceOut(BaseModel):
+    report_sentence: str
+    transcript_source: str
+    start_time: str | None = None
+    end_time: str | None = None
+    confidence: float = 0.0
+
+
+class ReportQAOut(BaseModel):
+    validation_id: UUID
+    report_id: UUID | None = None
+    dictation_recording_id: UUID | None = None
+    study_id: UUID | None = None
+    scores: ReportQAScoresOut
+    findings: list[ReportQAFindingOut] = Field(default_factory=list)
+    traceability: list[ReportQATraceOut] = Field(default_factory=list)
+    reviewer_findings: dict | None = None
+    risk_level: str
+    overall_score: int
+    primary_model: str | None = None
+    review_model: str | None = None
+    status: str
+    created_at: datetime
+
+
+class ReportQAValidateRequest(BaseModel):
+    transcript: str = Field(min_length=1)
+    report: str = Field(min_length=1)
+    report_id: UUID | None = None
+    recording_id: UUID | None = None
+    study_id: UUID | None = None
+    transcription_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+
+
+class ReportQAAuditEntryOut(BaseModel):
+    id: int
+    event_type: str
+    payload: dict
+    integrity_hash: str
+    created_at: datetime
+
+
+class FormatReportResponse(BaseModel):
+    report: str
+    model: str
+    recording_id: UUID
+    saved_report: ReportOut | None = None
+    qa: ReportQAOut | None = None

@@ -1,8 +1,8 @@
 /** Labels/descriptions for /admin/settings (API returns Turkish; UI uses these by setting key). */
 export const systemSettings = {
   ai_enabled: {
-    label: "Yapay zeka servisleri etkin",
-    desc: "Kapalıyken transkripsiyon, rapor düzenleme ve AI asistan devre dışı kalır.",
+    label: "Yapay zeka modülü etkin",
+    desc: "Kapalıyken transkripsiyon, rapor yapılandırma, AI asistan ve kalite denetimi devre dışı kalır.",
   },
   ai_text_base_url: {
     label: "Dil modeli sunucusu",
@@ -23,6 +23,22 @@ export const systemSettings = {
   ai_transcription_language: {
     label: "Transkripsiyon dili",
     desc: "Whisper dili. Türkçe için tr kullanın; otomatik algılama yanlış alfabe üretebilir.",
+  },
+  qa_enabled: {
+    label: "Rapor kalite denetimi (QA)",
+    desc: "Açıkken yapılandırılmış raporlar transkript ile karşılaştırılır; skor ve uyarılar üretilir.",
+  },
+  qa_secondary_review_enabled: {
+    label: "İkincil AI denetçi",
+    desc: "İkinci bir dil modeli halüsinasyon ve eksiklik denetimi yapar (birincil modelden bağımsız).",
+  },
+  qa_traceability_enabled: {
+    label: "Cümle izlenebilirliği",
+    desc: "Rapor cümlelerini transkript kaynaklarıyla eşleştirir.",
+  },
+  qa_review_model: {
+    label: "Denetçi modeli",
+    desc: "Boş bırakılırsa birincil dil modeli kullanılır.",
   },
   pacs_enabled: {
     label: "PACS entegrasyonu etkin",

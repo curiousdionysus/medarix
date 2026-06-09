@@ -105,6 +105,49 @@ export interface FormatReportResponse {
   model: string;
   recording_id?: string | null;
   saved_report?: ReportOut | null;
+  qa?: ReportQAOut | null;
+}
+
+export interface ReportQAScores {
+  transcription_confidence: number;
+  measurement_accuracy: number;
+  laterality_accuracy: number;
+  entity_preservation: number;
+  reviewer_confidence: number;
+  overall_score: number;
+  risk_level: string;
+}
+
+export interface ReportQAFinding {
+  type: string;
+  severity: string;
+  message: string;
+  original?: string | null;
+  report?: string | null;
+  details?: Record<string, unknown> | null;
+}
+
+export interface ReportQAOut {
+  validation_id: string;
+  report_id?: string | null;
+  dictation_recording_id?: string | null;
+  study_id?: string | null;
+  scores: ReportQAScores;
+  findings: ReportQAFinding[];
+  traceability: Array<{
+    report_sentence: string;
+    transcript_source: string;
+    start_time?: string | null;
+    end_time?: string | null;
+    confidence: number;
+  }>;
+  reviewer_findings?: Record<string, unknown> | null;
+  risk_level: string;
+  overall_score: number;
+  primary_model?: string | null;
+  review_model?: string | null;
+  status: string;
+  created_at: string;
 }
 
 export interface AiAssistantMessage {

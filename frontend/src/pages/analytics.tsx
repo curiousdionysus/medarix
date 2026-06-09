@@ -11,8 +11,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { BarChart3, FileText, CheckCircle2, Timer, Sparkles, Mic, Users } from "lucide-react";
+import { BarChart3, FileText, CheckCircle2, Timer, Sparkles, Mic, Users, ShieldAlert } from "lucide-react";
 import { useKpis, useProductivity, useTrends, useDashboard } from "@/features/analytics/api";
+import { useQASummary } from "@/features/qa/api";
 import { useLocale, useT } from "@/features/i18n/locale-context";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
@@ -56,6 +57,7 @@ export default function AnalyticsPage() {
   const productivity = useProductivity(days);
   const trends = useTrends(days > 30 ? 30 : days);
   const dashboard = useDashboard();
+  const qaSummary = useQASummary(days);
 
   const dateLocale = locale === "tr" ? "tr-TR" : "en-US";
   const trendData = (trends.data ?? []).map((d) => ({
@@ -129,6 +131,24 @@ export default function AnalyticsPage() {
           tone="primary"
           loading={kpis.isLoading}
         />
+        {qaSummary.isSuccess && qaSummary.data && qaSummary.data.total_validations > 0 && (
+          <>
+            <StatCard
+              label={t("qa.analytics.avgScore")}
+              value={qaSummary.data.average_score}
+              icon={ShieldAlert}
+              tone="accent"
+              loading={qaSummary.isLoading}
+            />
+            <StatCard
+              label={t("qa.analytics.highRisk")}
+              value={qaSummary.data.high_risk}
+              icon={ShieldAlert}
+              tone="warning"
+              loading={qaSummary.isLoading}
+            />
+          </>
+        )}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">

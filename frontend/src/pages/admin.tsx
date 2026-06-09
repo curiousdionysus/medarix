@@ -27,16 +27,21 @@ import { useAuth } from "@/features/auth/auth-context";
 import { actionLabel, actionCategory } from "@/features/admin/audit-meta";
 import {
   AI_CATEGORY,
+  AI_SECTION_I18N,
+  AI_SETTING_SECTIONS,
   AI_TEXT_BASE_URL_KEY,
   AI_TEXT_MODEL_KEY,
   AI_TRANSCRIPTION_BASE_URL_KEY,
   AI_TRANSCRIPTION_MODEL_KEY,
   AUTH_CATEGORY,
+  BOOL_SETTING_KEYS,
   BRANDING_CATEGORY,
   CATEGORY_TOGGLE_KEY,
   LDAP_SETTING_KEYS,
   MODULE_TOGGLE_KEYS,
+  QA_ENABLED_KEY,
   isSettingEnabled,
+  sortAiSettings,
 } from "@/features/admin/settings-meta";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -856,7 +861,7 @@ function SettingsTab() {
 
   return (
     <div className="space-y-4">
-      {data?.filter((g) => g.category !== BRANDING_CATEGORY).map((group) => {
+      {data?.filter((g) => g.category !== BRANDING_CATEGORY && g.category !== "Rapor Kalite Denetimi (QA)").map((group) => {
         const toggleKey = CATEGORY_TOGGLE_KEY[group.category];
         const toggleSetting = toggleKey ? group.settings.find((s) => s.key === toggleKey) : undefined;
         const fieldSettings = group.settings.filter((s) => !MODULE_TOGGLE_KEYS.has(s.key));
@@ -866,6 +871,111 @@ function SettingsTab() {
         const isAuthCategory = group.category === AUTH_CATEGORY;
         const isAiCategory = group.category === AI_CATEGORY;
         const fieldsDisabled = toggleKey ? !moduleEnabled : false;
+        const qaEnabled = isAiCategory
+          ? isSettingEnabled(settingValue(group, QA_ENABLED_KEY))
+          : false;
+
+        const renderSettingField = (s: (typeof fieldSettings)[number], extraDisabled = false) => {
+          const disabled = fieldsDisabled || extraDisabled;
+          const showTextModelList = isAiCategory && s.key === AI_TEXT_MODEL_KEY;
+          const showTranscriptionModelList = isAiCategory && s.key === AI_TRANSCRIPTION_MODEL_KEY;
+          const modelsList = showTextModelList
+            ? textModelsList
+            : showTranscriptionModelList
+              ? transcriptionModelsList
+              : null;
+          const isBool = BOOL_SETTING_KEYS.has(s.key);
+
+          return (
+            <div key={s.key} className="space-y-2">
+              <div
+                className={cn(
+                  "grid gap-1.5 sm:items-center",
+                  isBool ? "sm:grid-cols-[1fr_auto]" : "sm:grid-cols-[1fr_1.4fr]",
+                )}
+              >
+                <div>
+                  <Label htmlFor={s.key}>{settingLabel(s.key, locale, s.label)}</Label>
+                  {s.description && (
+                    <p className="text-xs text-muted-foreground">
+                      {settingDescription(s.key, locale, s.description)}
+                    </p>
+                  )}
+                </div>
+                {isBool ? (
+                  <Switch
+                    id={s.key}
+                    checked={isSettingEnabled(valueOf(s.key, s.value))}
+                    disabled={disabled}
+                    onCheckedChange={(checked) => setValue(s.key, checked ? "true" : "false")}
+                    aria-label={settingLabel(s.key, locale, s.label)}
+                  />
+                ) : showTextModelList || showTranscriptionModelList ? (
+                  <div className="flex gap-2">
+                    <Input
+                      id={s.key}
+                      className="min-w-0 flex-1"
+                      value={valueOf(s.key, s.value)}
+                      disabled={disabled}
+                      onChange={(e) => setValue(s.key, e.target.value)}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0"
+                      disabled={
+                        disabled ||
+                        (showTextModelList ? listTextModels.isPending : listTranscriptionModels.isPending)
+                      }
+                      onClick={() => (showTextModelList ? fetchTextModels(group) : fetchTranscriptionModels(group))}
+                    >
+                      <List className="size-4" />
+                      {showTextModelList
+                        ? listTextModels.isPending
+                          ? "…"
+                          : t("admin.listModels")
+                        : listTranscriptionModels.isPending
+                          ? "…"
+                          : t("admin.listModels")}
+                    </Button>
+                  </div>
+                ) : (
+                  <Input
+                    id={s.key}
+                    type={s.is_secret ? "password" : "text"}
+                    value={valueOf(s.key, s.value)}
+                    disabled={disabled}
+                    onChange={(e) => setValue(s.key, e.target.value)}
+                  />
+                )}
+              </div>
+              {modelsList && modelsList.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 sm:ml-[calc(100%*1/2.4)] sm:pl-0">
+                  {modelsList.map((modelId) => (
+                    <button
+                      key={modelId}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => {
+                        setValue(s.key, modelId);
+                        toast.message(t("admin.modelSelected"), { description: modelId });
+                      }}
+                      className={cn(
+                        "rounded-md border px-2 py-1 font-mono text-xs transition-colors",
+                        valueOf(s.key, s.value) === modelId
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-secondary/50 hover:bg-secondary",
+                      )}
+                    >
+                      {modelId}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        };
 
         return (
           <Card key={group.category}>
@@ -904,94 +1014,42 @@ function SettingsTab() {
                 toggleKey && !moduleEnabled && "pointer-events-none opacity-45",
               )}
             >
-              {fieldSettings.map((s) => {
-                const showTextModelList = isAiCategory && s.key === AI_TEXT_MODEL_KEY;
-                const showTranscriptionModelList = isAiCategory && s.key === AI_TRANSCRIPTION_MODEL_KEY;
-                const modelsList = showTextModelList
-                  ? textModelsList
-                  : showTranscriptionModelList
-                    ? transcriptionModelsList
-                    : null;
+              {isAiCategory ? (
+                <div className="space-y-6">
+                  {AI_SETTING_SECTIONS.map((section) => {
+                    const sectionFields = sortAiSettings(
+                      fieldSettings.filter((f) => section.keys.includes(f.key)),
+                    );
+                    if (sectionFields.length === 0) return null;
+                    const qaSectionMuted = section.id === "qa" && !qaEnabled;
 
-                return (
-                  <div key={s.key} className="space-y-2">
-                    <div className="grid gap-1.5 sm:grid-cols-[1fr_1.4fr] sm:items-center">
-                      <div>
-                        <Label htmlFor={s.key}>{settingLabel(s.key, locale, s.label)}</Label>
-                        {s.description && (
+                    return (
+                      <div
+                        key={section.id}
+                        className={cn(
+                          "space-y-3 rounded-lg border border-border/60 bg-muted/20 p-4",
+                          qaSectionMuted && "opacity-55",
+                        )}
+                      >
+                        <div>
+                          <h4 className="text-sm font-semibold">{t(`admin.${AI_SECTION_I18N[section.id].title}`)}</h4>
                           <p className="text-xs text-muted-foreground">
-                            {settingDescription(s.key, locale, s.description)}
+                            {t(`admin.${AI_SECTION_I18N[section.id].desc}`)}
                           </p>
+                        </div>
+                        {sectionFields.map((s) =>
+                          renderSettingField(
+                            s,
+                            section.id === "qa" && s.key !== QA_ENABLED_KEY && !qaEnabled,
+                          ),
                         )}
                       </div>
-                      {showTextModelList || showTranscriptionModelList ? (
-                        <div className="flex gap-2">
-                          <Input
-                            id={s.key}
-                            className="min-w-0 flex-1"
-                            value={valueOf(s.key, s.value)}
-                            disabled={fieldsDisabled}
-                            onChange={(e) => setValue(s.key, e.target.value)}
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="shrink-0"
-                            disabled={
-                              fieldsDisabled ||
-                              (showTextModelList ? listTextModels.isPending : listTranscriptionModels.isPending)
-                            }
-                            onClick={() =>
-                              showTextModelList ? fetchTextModels(group) : fetchTranscriptionModels(group)
-                            }
-                          >
-                            <List className="size-4" />
-                            {showTextModelList
-                              ? listTextModels.isPending
-                                ? "…"
-                                : t("admin.listModels")
-                              : listTranscriptionModels.isPending
-                                ? "…"
-                                : t("admin.listModels")}
-                          </Button>
-                        </div>
-                      ) : (
-                        <Input
-                          id={s.key}
-                          type={s.is_secret ? "password" : "text"}
-                          value={valueOf(s.key, s.value)}
-                          disabled={fieldsDisabled}
-                          onChange={(e) => setValue(s.key, e.target.value)}
-                        />
-                      )}
-                    </div>
-                    {modelsList && modelsList.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 sm:ml-[calc(100%*1/2.4)] sm:pl-0">
-                        {modelsList.map((modelId) => (
-                          <button
-                            key={modelId}
-                            type="button"
-                            disabled={fieldsDisabled}
-                            onClick={() => {
-                              setValue(s.key, modelId);
-                              toast.message(t("admin.modelSelected"), { description: modelId });
-                            }}
-                            className={cn(
-                              "rounded-md border px-2 py-1 font-mono text-xs transition-colors",
-                              valueOf(s.key, s.value) === modelId
-                                ? "border-primary bg-primary/10 text-primary"
-                                : "border-border bg-secondary/50 hover:bg-secondary",
-                            )}
-                          >
-                            {modelId}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              ) : (
+                fieldSettings.map((s) => renderSettingField(s))
+              )}
 
               {isAuthCategory && moduleEnabled && (
                 <div className="mt-2 space-y-3 rounded-lg border border-dashed border-border p-4">

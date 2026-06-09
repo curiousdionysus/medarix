@@ -13,7 +13,7 @@ settings = get_settings()
 
 
 DEFAULT_SETTINGS = [
-    SettingDefinition("ai.enabled", "true", "Yapay Zeka Servisleri", "Yapay zeka servisleri etkin", "Kapalıyken transkripsiyon, rapor düzenleme ve AI asistan devre dışı kalır."),
+    SettingDefinition("ai.enabled", "true", "Yapay Zeka Servisleri", "Yapay zeka modülü etkin", "Kapalıyken transkripsiyon, rapor yapılandırma, AI asistan ve kalite denetimi devre dışı kalır."),
     SettingDefinition(
         "ai.text_base_url",
         settings.ollama_base_url,
@@ -43,6 +43,34 @@ DEFAULT_SETTINGS = [
         "Sunucuda yüklü model adı. Listele ile mevcut modelleri sorgulayın.",
     ),
     SettingDefinition("ai.transcription_language", "tr", "Yapay Zeka Servisleri", "Transkripsiyon dili", "Whisper dili. Türkçe için tr kullanın; otomatik algılama yanlış alfabe üretebilir."),
+    SettingDefinition(
+        "qa.enabled",
+        "false",
+        "Yapay Zeka Servisleri",
+        "Rapor kalite denetimi (QA)",
+        "Açıkken yapılandırılmış raporlar transkript ile karşılaştırılır; skor ve uyarılar üretilir.",
+    ),
+    SettingDefinition(
+        "qa.secondary_review_enabled",
+        "false",
+        "Yapay Zeka Servisleri",
+        "İkincil AI denetçi",
+        "İkinci bir dil modeli halüsinasyon ve eksiklik denetimi yapar (birincil modelden bağımsız).",
+    ),
+    SettingDefinition(
+        "qa.traceability_enabled",
+        "true",
+        "Yapay Zeka Servisleri",
+        "Cümle izlenebilirliği",
+        "Her rapor cümlesini transkriptteki kaynak cümleyle eşleştirir.",
+    ),
+    SettingDefinition(
+        "qa.review_model",
+        "",
+        "Yapay Zeka Servisleri",
+        "Denetçi modeli",
+        "İkincil denetçi için model adı. Boş bırakılırsa birincil dil modeli kullanılır.",
+    ),
     SettingDefinition("pacs.enabled", "true", "PACS / DICOM", "PACS entegrasyonu etkin", "Kapalıyken PACS sorgu, çekme ve rapor gönderimi devre dışı kalır."),
     SettingDefinition("pacs.ae_title", settings.pacs_ae_title, "PACS / DICOM", "Yerel AE başlığı", "DICOM geçidi tarafından kullanılan AE başlığı."),
     SettingDefinition("pacs.host", settings.pacs_host, "PACS / DICOM", "PACS sunucusu", "Harici PACS ana makine adı veya IP adresi."),
@@ -122,11 +150,25 @@ def list_grouped_settings(db: Session) -> list[dict]:
     ensure_system_settings(db)
     rows = list(db.scalars(select(SystemSetting).order_by(SystemSetting.category, SystemSetting.key)))
     grouped: dict[str, list[SystemSetting]] = {}
+    ai_order = {
+        "ai.transcription_base_url": 1,
+        "ai.transcription_model": 2,
+        "ai.transcription_language": 3,
+        "ai.text_base_url": 4,
+        "ai.text_model": 5,
+        "qa.enabled": 6,
+        "qa.secondary_review_enabled": 7,
+        "qa.review_model": 8,
+        "qa.traceability_enabled": 9,
+    }
     for row in rows:
         # License state is managed by the dedicated license module, not the settings editor.
         if row.key.startswith("license."):
             continue
         grouped.setdefault(row.category, []).append(row)
+    for category, settings_rows in grouped.items():
+        if category == "Yapay Zeka Servisleri":
+            settings_rows.sort(key=lambda r: ai_order.get(r.key, 100))
     return [
         {
             "category": category,

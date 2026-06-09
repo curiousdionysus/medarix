@@ -238,6 +238,43 @@ class AuditEvent(Base):
     )
 
 
+class ReportQAValidation(Base):
+    __tablename__ = "report_qa_validations"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    report_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("reports.id"), index=True)
+    dictation_recording_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("dictation_recordings.id"), index=True
+    )
+    study_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("studies.id"), index=True)
+    created_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
+    transcript_text: Mapped[str] = mapped_column(Text)
+    report_text: Mapped[str] = mapped_column(Text)
+    transcript_hash: Mapped[str] = mapped_column(String(64))
+    report_hash: Mapped[str] = mapped_column(String(64))
+    findings: Mapped[list] = mapped_column(JSONB, default=list)
+    scores: Mapped[dict] = mapped_column(JSONB, default=dict)
+    traceability: Mapped[list] = mapped_column(JSONB, default=list)
+    reviewer_findings: Mapped[dict | None] = mapped_column(JSONB)
+    risk_level: Mapped[str] = mapped_column(String(16), default="high")
+    overall_score: Mapped[int] = mapped_column(Integer, default=0)
+    primary_model: Mapped[str | None] = mapped_column(String(128))
+    review_model: Mapped[str | None] = mapped_column(String(128))
+    status: Mapped[str] = mapped_column(String(32), default="completed")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
+class ReportQAAuditLog(Base):
+    __tablename__ = "report_qa_audit_log"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    validation_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("report_qa_validations.id"), index=True)
+    event_type: Mapped[str] = mapped_column(String(64))
+    payload: Mapped[dict] = mapped_column(JSONB, default=dict)
+    integrity_hash: Mapped[str] = mapped_column(String(128))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
 class SystemSetting(Base):
     __tablename__ = "system_settings"
 

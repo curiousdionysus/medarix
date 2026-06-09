@@ -18,8 +18,11 @@ from app.schemas import (
     AiSuggestionResponse,
     FormatReportRequest,
     FormatReportResponse,
+    ReportQAOut,
+    ReportQAScoresOut,
     TranscriptionResponse,
 )
+from app.services.qa.service import run_report_qa, serialize_qa_validation
 from app.services.ai_gateway import ai_gateway
 from app.services.audit import record_audit_event
 from app.services.rbac import require_permission
@@ -228,11 +231,50 @@ async def format_report(
             "model": system_settings["ai.text_model"],
         },
     )
+    qa_row = await run_report_qa(
+        db,
+        system_settings=system_settings,
+        transcript=payload.transcript,
+        report=report,
+        actor=current_user,
+        report_id=saved_report.id if saved_report else None,
+        dictation_recording_id=recording.id,
+        study_id=payload.study_id,
+    )
+    qa_out: ReportQAOut | None = None
+    if qa_row:
+        data = serialize_qa_validation(qa_row)
+        qa_out = ReportQAOut(
+            validation_id=data["validation_id"],
+            report_id=data.get("report_id"),
+            dictation_recording_id=data.get("dictation_recording_id"),
+            study_id=data.get("study_id"),
+            scores=ReportQAScoresOut(**data["scores"]),
+            findings=data.get("findings") or [],
+            traceability=data.get("traceability") or [],
+            reviewer_findings=data.get("reviewer_findings"),
+            risk_level=data["risk_level"],
+            overall_score=data["overall_score"],
+            primary_model=data.get("primary_model"),
+            review_model=data.get("review_model"),
+            status=data["status"],
+            created_at=data["created_at"],
+        )
+        record_audit_event(
+            db,
+            request=request,
+            action="qa.auto_validate",
+            resource_type="report_qa",
+            resource_id=qa_row.id,
+            actor=current_user,
+            metadata={"overall_score": qa_row.overall_score, "risk_level": qa_row.risk_level},
+        )
     return FormatReportResponse(
         report=report,
         model=system_settings["ai.text_model"],
         recording_id=recording.id,
         saved_report=saved_report,
+        qa=qa_out,
     )
 
 

@@ -47,6 +47,18 @@ def kpis(
     return analytics_service.kpis(db, days=days)
 
 
+@router.get("/qa-summary")
+def qa_summary(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+    days: int = 30,
+) -> dict:
+    require_permission(current_user, "analytics:view")
+    require_permission(current_user, "qa:view")
+    require_enterprise_license(db)
+    return analytics_service.qa_summary(db, days=days)
+
+
 @router.get("/trends", response_model=list[TrendPoint])
 def trends(
     db: Annotated[Session, Depends(get_db)],

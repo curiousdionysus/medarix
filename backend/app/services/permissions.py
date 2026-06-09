@@ -67,6 +67,8 @@ PERMISSION_GROUPS: list[PermissionGroupDef] = [
         "label": "Yapay zeka",
         "permissions": [
             _perm("ai:use", "AI kullanımı", "Asistan, öneri ve formatlama"),
+            _perm("qa:view", "Rapor QA görüntüleme", "Kalite skoru ve denetim kayıtları"),
+            _perm("qa:run", "Rapor QA çalıştırma", "Manuel kalite doğrulama"),
             _perm("analytics:view", "Analitik", "Enterprise analitik panelleri"),
         ],
     },

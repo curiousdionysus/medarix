@@ -12,6 +12,7 @@ from app.models import (
     AuditEvent,
     DictationRecording,
     Report,
+    ReportQAValidation,
     ReportStatus,
     Study,
     User,
@@ -46,10 +47,13 @@ _ACTION_LABELS = {
     "report.create": "rapor oluşturdu",
     "report.update": "raporu güncelledi",
     "report.sign": "raporu imzaladı",
+    "report.final_approval": "rapor son kontrolünü onayladı",
     "report.send_to_pacs": "raporu PACS'e gönderdi",
     "report.download_pdf": "rapor PDF indirdi",
     "ai.transcribe": "ses kaydını yazıya döktü",
     "ai.format_report": "AI ile rapor düzenledi",
+    "qa.validate": "Rapor QA doğrulaması",
+    "qa.auto_validate": "Otomatik rapor QA",
     "study.search": "çalışma arama yaptı",
     "study.open": "çalışma açtı",
     "auth.login": "sisteme giriş yaptı",
@@ -313,3 +317,36 @@ def trends(db: Session, days: int = 14) -> list[dict]:
             }
         )
     return out
+
+
+def qa_summary(db: Session, *, days: int = 30) -> dict:
+    """Aggregate Report QA metrics for admin/analytics dashboards."""
+    start = datetime.now(timezone.utc) - timedelta(days=max(1, min(days, 365)))
+    rows = db.scalars(select(ReportQAValidation).where(ReportQAValidation.created_at >= start)).all()
+    if not rows:
+        return {
+            "total_validations": 0,
+            "average_score": 0,
+            "low_risk": 0,
+            "medium_risk": 0,
+            "high_risk": 0,
+            "critical_findings": 0,
+        }
+    total = len(rows)
+    avg = round(sum(r.overall_score for r in rows) / total, 1)
+    low = sum(1 for r in rows if r.risk_level == "low")
+    medium = sum(1 for r in rows if r.risk_level == "medium")
+    high = sum(1 for r in rows if r.risk_level == "high")
+    critical = 0
+    for r in rows:
+        for f in r.findings or []:
+            if isinstance(f, dict) and f.get("severity") == "critical":
+                critical += 1
+    return {
+        "total_validations": total,
+        "average_score": avg,
+        "low_risk": low,
+        "medium_risk": medium,
+        "high_risk": high,
+        "critical_findings": critical,
+    }

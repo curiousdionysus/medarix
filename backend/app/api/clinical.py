@@ -11,6 +11,8 @@ from app.db.session import get_db
 from app.models import Patient, Report, ReportStatus, ReportTemplate, Series, Study, User
 from app.schemas import (
     ReportCreate,
+    ReportFinalizeRequest,
+    ReportFinalizeResponse,
     ReportOut,
     ReportPacsSendResponse,
     ReportPdfRequest,
@@ -389,6 +391,83 @@ def get_report_versions(
         )
         for v in versions
     ]
+
+
+@router.post("/reports/{report_id}/finalize", response_model=ReportFinalizeResponse)
+def finalize_report(
+    request: Request,
+    report_id: UUID,
+    payload: ReportFinalizeRequest,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> dict:
+    """Sign report after explicit user acknowledgment; send to PACS when integration is enabled."""
+    require_permission(current_user, "report:sign")
+    if not payload.user_acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Devam etmek için onay kutusunu işaretlemeniz gerekir.",
+        )
+
+    report = db.get(Report, report_id)
+    if not report:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
+
+    study = db.get(Study, report.study_id)
+    if not study:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Study not found")
+
+    record_audit_event(
+        db,
+        request=request,
+        action="report.final_approval",
+        resource_type="report",
+        resource_id=report.id,
+        actor=current_user,
+        metadata={
+            "user_acknowledged": True,
+            "disclaimer_version": "final_review_v1",
+        },
+    )
+
+    if report.status != ReportStatus.signed:
+        report.status = ReportStatus.signed
+        report.signed_at = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(report)
+        snapshot_report_version(db, report, current_user.id)
+        record_audit_event(
+            db, request=request, action="report.sign", resource_type="report", resource_id=report.id, actor=current_user
+        )
+
+    system_settings = get_settings_map(db)
+    pacs_status: dict | None = None
+    if is_setting_enabled(system_settings, "pacs.enabled"):
+        patient = db.get(Patient, study.patient_id)
+        pacs_status = dicom_gateway.store_report(
+            report,
+            study,
+            system_settings,
+            current_user.display_name or current_user.username,
+            patient_dicom_id=decrypt_value(patient.patient_id_enc) if patient else None,
+            patient_name=decrypt_value(patient.name_enc) if patient else None,
+        )
+        if pacs_status.get("status") == "failed":
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=pacs_status.get("detail") or "Rapor PACS'e gönderilemedi.",
+            )
+        record_audit_event(
+            db,
+            request=request,
+            action="report.send_to_pacs",
+            resource_type="report",
+            resource_id=report.id,
+            actor=current_user,
+            metadata=pacs_status,
+        )
+
+    return {"report": report, "pacs_status": pacs_status}
 
 
 @router.post("/reports/{report_id}/send-to-pacs", response_model=ReportPacsSendResponse)

@@ -110,6 +110,27 @@ export function useSendReportToPacs() {
   });
 }
 
+export interface FinalizeReportResult {
+  report: ReportOut;
+  pacs_status: Record<string, unknown> | null;
+}
+
+export function useFinalizeReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (reportId: string) =>
+      (
+        await api.post<FinalizeReportResult>(`/reports/${reportId}/finalize`, {
+          user_acknowledged: true,
+        })
+      ).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["study-report"] });
+      qc.invalidateQueries({ queryKey: ["analytics"] });
+    },
+  });
+}
+
 export function useTemplates() {
   return useQuery({
     queryKey: ["report-templates"],

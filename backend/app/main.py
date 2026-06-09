@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import admin, ai, analytics, auth, branding, clinical, dicom, licensing, patients, recordings
+from app.api import admin, ai, analytics, auth, branding, clinical, dicom, licensing, patients, qa, recordings
 from app.api.deps import get_current_user
 from app.core.config import get_settings
 from app.core.config_validation import validate_settings
@@ -47,6 +47,7 @@ app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(clinical.router, prefix=settings.api_prefix)
 app.include_router(dicom.router, prefix=settings.api_prefix)
 app.include_router(ai.router, prefix=settings.api_prefix)
+app.include_router(qa.router, prefix=settings.api_prefix)
 app.include_router(recordings.router, prefix=settings.api_prefix)
 app.include_router(admin.router, prefix=settings.api_prefix)
 app.include_router(analytics.router, prefix=settings.api_prefix)

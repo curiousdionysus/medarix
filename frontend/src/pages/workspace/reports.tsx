@@ -14,19 +14,18 @@ import {
   Lock,
   FilePlus2,
   Clock,
-  Server,
 } from "lucide-react";
 import {
   useStudy,
   useStudyReport,
   useSaveReport,
-  useSignReport,
-  useSendReportToPacs,
+  useFinalizeReport,
   useTemplates,
   useStudies,
   downloadReportPdf,
 } from "@/features/studies/api";
 import { parseSections, serializeSections, type SectionMap } from "@/features/reports/sections";
+import { ReportApprovalDialog } from "@/features/reports/report-approval-dialog";
 import { useApiError, useReportSections } from "@/features/i18n/helpers";
 import { useLocale, useT } from "@/features/i18n/locale-context";
 import { VersionHistory } from "@/features/reports/version-history";
@@ -112,8 +111,7 @@ function ReportEditor({ studyId }: { studyId: string }) {
   const { data: report, isLoading: reportLoading } = useStudyReport(studyId);
   const { data: templates } = useTemplates();
   const save = useSaveReport(studyId);
-  const sign = useSignReport();
-  const sendToPacs = useSendReportToPacs();
+  const finalize = useFinalizeReport();
   const isEnterprise = useIsEnterprise();
 
   const [mode, setMode] = React.useState<"structured" | "raw">("structured");
@@ -121,6 +119,7 @@ function ReportEditor({ studyId }: { studyId: string }) {
   const [raw, setRaw] = React.useState("");
   const [saveState, setSaveState] = React.useState<SaveState>("idle");
   const [amending, setAmending] = React.useState(false);
+  const [approvalOpen, setApprovalOpen] = React.useState(false);
 
   const hydrated = React.useRef(false);
   const lastSaved = React.useRef<string>("");
@@ -196,40 +195,32 @@ function ReportEditor({ studyId }: { studyId: string }) {
     toast.success(t("reports.templateLoaded", { title: tpl.title }));
   };
 
-  const handleSign = async () => {
+  const openApprovalDialog = () => {
     if (!report?.id) {
       toast.error(t("reports.saveFirst"));
       return;
     }
-    const content = currentContent();
-    try {
-      if (content !== lastSaved.current) {
-        await save.mutateAsync({ content, transcript: report.transcript, status: amending ? "amended" : "draft" });
-        lastSaved.current = content;
-      }
-      await sign.mutateAsync(report.id);
-      setAmending(false);
-      toast.success(t("reports.signSuccess"));
-    } catch (err) {
-      toast.error(apiErr(err, "reports.signFailShort"));
-    }
+    setApprovalOpen(true);
   };
 
-  const handleSendToPacs = async () => {
-    if (!report?.id) {
-      toast.error(t("reports.saveFirst"));
-      return;
-    }
+  const handleFinalize = async () => {
+    if (!report?.id) return;
     const content = currentContent();
     try {
       if (content !== lastSaved.current && content.trim()) {
         await save.mutateAsync({ content, transcript: report.transcript, status: amending ? "amended" : "draft" });
         lastSaved.current = content;
       }
-      const res = await sendToPacs.mutateAsync(report.id);
+      const res = await finalize.mutateAsync(report.id);
       setAmending(false);
-      const status = res.pacs_status?.status ?? "";
-      const warnings = res.pacs_status?.warnings;
+      setApprovalOpen(false);
+      const pacsStatus = res.pacs_status;
+      if (!pacsStatus) {
+        toast.success(t("reports.signSuccess"));
+        return;
+      }
+      const status = String(pacsStatus.status ?? "");
+      const warnings = pacsStatus.warnings;
       if (
         status === "stored_in_pacs" ||
         status === "stored_in_orthanc_study_attachment" ||
@@ -240,7 +231,7 @@ function ReportEditor({ studyId }: { studyId: string }) {
           toast.warning(t("reports.pacsPartialWarning", { detail: warnings.join("; ") }));
         }
       } else {
-        const detail = res.pacs_status?.detail;
+        const detail = typeof pacsStatus.detail === "string" ? pacsStatus.detail : undefined;
         toast.message(t("reports.pacsSignedTitle"), {
           description: detail
             ? t("reports.pacsStatusDetail", { detail })
@@ -318,26 +309,26 @@ function ReportEditor({ studyId }: { studyId: string }) {
             <Button variant="outline" size="sm" onClick={handlePdf}>
               <FileDown /> PDF
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSendToPacs}
-              disabled={!report?.id || sendToPacs.isPending}
-            >
-              <Server /> {sendToPacs.isPending ? t("reports.sending") : t("reports.sendPacs")}
-            </Button>
             {isSigned ? (
               <Button variant="secondary" size="sm" onClick={() => setAmending(true)}>
                 <FilePlus2 /> {t("reports.amend")}
               </Button>
             ) : (
-              <Button size="sm" onClick={handleSign} disabled={sign.isPending}>
-                <CheckCircle2 /> {t("reports.sign")}
+              <Button size="sm" onClick={openApprovalDialog} disabled={!report?.id || finalize.isPending}>
+                <CheckCircle2 />{" "}
+                {finalize.isPending ? t("reports.approvalSubmitting") : t("reports.approveAndSend")}
               </Button>
             )}
           </div>
         </CardContent>
       </Card>
+
+      <ReportApprovalDialog
+        open={approvalOpen}
+        onOpenChange={setApprovalOpen}
+        onConfirm={handleFinalize}
+        pending={finalize.isPending}
+      />
 
       {isSigned && (
         <div className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-2.5 text-sm text-success">
